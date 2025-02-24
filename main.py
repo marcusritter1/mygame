@@ -56,7 +56,7 @@ def main():
                 action = menu.handle_event(event)
                 if action == "start":
                     in_menu = False
-                    game = Game(screen)
+                    game = Game(screen, game_resolution)
                 elif action == "settings":
                     in_menu = False
                     in_settings = True

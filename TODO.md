@@ -3,4 +3,14 @@
 * task to build executable
 * task to build virtualenv from requirements.txt
 * how to put background audio for menu
+* create a simple map based on tiles using a grid raster.
 * figure out how t oput pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
+
+## map questions:
+
+* what to do if the map is too small for the screen?
+* how to scroll around map with mouse if it is bigger than the screen?
+* how to put textures for each tile
+* put map, tiles in class objects and load in game class
+* what happens when screen resolution is changed?
+* zoom in and out of map?
