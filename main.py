@@ -7,17 +7,22 @@ from settings import Settings
 from quit_popup import QuitPopup
 from game_settings import GameSettings
 from game_enums import WindowMode
+from util import get_current_resolution, get_possible_resolutions
 
 def main():
     
     game_name = "MyGame"
     game_settings = GameSettings()
     
+    game_resolution = game_settings.resolution
+
+    resolutions_list = get_possible_resolutions()
+    
     # Load the .ico icon
     icon = pygame.image.load("icon.ico")
     
     pygame.init()
-    WIDTH, HEIGHT = 800, 600
+    WIDTH, HEIGHT = game_resolution[0], game_resolution[1]
     
     pygame.display.set_icon(icon)
     
@@ -32,7 +37,7 @@ def main():
     manager = pygame_gui.UIManager((WIDTH, HEIGHT))
     
     menu = Menu(screen, WIDTH, HEIGHT)
-    settings = Settings(screen, WIDTH, HEIGHT)
+    settings = Settings(screen, WIDTH, HEIGHT, resolutions_list, game_settings)
     game = None
     running = True
     in_menu = True

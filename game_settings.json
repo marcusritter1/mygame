@@ -1,5 +1,9 @@
 {
     "graphics_settings": {
-        "window_mode": "WINDOWED"
+        "window_mode": "WINDOWED",
+        "resolution": [
+            800,
+            600
+        ]
     }
 }
