@@ -8,8 +8,8 @@
 
 ## map questions:
 
+* how to make isometric tiles, grid, textures? -> LIKE IN ANNO?
 * move around map with arrow keys
-* how to put textures for each tile
 * tiles in class objects and load in game class
 * what happens when screen resolution is changed?
 * zoom in and out of map?

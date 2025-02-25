@@ -12,6 +12,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
+
+        # Load textures
+        self.water_texture = pygame.image.load("assets/water.png").convert_alpha()
+        self.grass_texture = pygame.image.load("assets/grass.png").convert_alpha()
         
         self.map = Map()
         self.map_tiles_width = self.map.get_map_tiles_width()
@@ -64,13 +68,18 @@ class Game:
             0: self.BLACK   # Empty
         }
 
+        self.tile_textures = {
+            1: self.water_texture,  # ocean
+            2: self.grass_texture  # grass
+        }
+
         #print(self.grid_width * self.tile_size, self.game_screen_width)
         self.max_move_left_right = abs(self.game_screen_width - (self.grid_width * self.tile_size))
         self.max_move_up_down = abs(self.game_screen_height - (self.grid_height * self.tile_size))
 
     def run(self):
         while self.running:
-            self.screen.fill((0, 100, 200))  # Game background color
+            self.screen.fill((0, 0, 0))
 
             # Get mouse position
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -115,9 +124,12 @@ class Game:
             for row in range(self.grid_height):
                 for col in range(self.grid_width):
                     tile_type = self.map.tile_grid[row][col]
-                    tile_rect = pygame.Rect(col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y, self.tile_size, self.tile_size)
-                    pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
-                    pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
+                    if tile_type != 0:
+                        self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y))
+                    else:
+                        tile_rect = pygame.Rect(col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y, self.tile_size, self.tile_size)
+                        pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
+                        pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
             # Handle events
             for event in pygame.event.get():
