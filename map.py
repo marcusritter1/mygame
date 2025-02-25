@@ -4,7 +4,7 @@ import numpy as np
 class Map():
     
     def __init__(self):
-        self.map_save_file_path = "saved_maps/saved_map_1.json"
+        self.map_save_file_path = "saved_maps/saved_map_3.json"
         self.tile_grid = None
         
         self.load_map_from_json()

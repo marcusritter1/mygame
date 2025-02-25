@@ -8,7 +8,7 @@
 
 ## map questions:
 
-* how to scroll around map with mouse if it is bigger than the screen?
+* move around map with arrow keys
 * how to put textures for each tile
 * tiles in class objects and load in game class
 * what happens when screen resolution is changed?
