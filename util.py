@@ -12,3 +12,11 @@ def get_possible_resolutions() -> list[tuple[int, int]]:
     modes = display.GetModes()
     possible_resolutions = [(mode.w, mode.h) for mode in modes]
     return possible_resolutions
+
+def split_evenly(x: int) -> tuple[int, int]:
+    if (x // 2) % 2 == 0:
+        a = b = x // 2
+    else:
+        a = (x // 2) + 1
+        b = x - a  # Ensure a + b = x
+    return a, b

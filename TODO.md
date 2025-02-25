@@ -11,6 +11,6 @@
 * what to do if the map is too small for the screen?
 * how to scroll around map with mouse if it is bigger than the screen?
 * how to put textures for each tile
-* put map, tiles in class objects and load in game class
+* tiles in class objects and load in game class
 * what happens when screen resolution is changed?
 * zoom in and out of map?
