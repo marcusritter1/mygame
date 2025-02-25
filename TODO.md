@@ -13,3 +13,5 @@
 * tiles in class objects and load in game class
 * what happens when screen resolution is changed?
 * zoom in and out of map?
+* when in fullscreen and the game res is smaller than screen resolution game still scrolls around even it is not necessary...
+    * ideally game would also be centered for this scenario.
