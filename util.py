@@ -1,22 +1,16 @@
-import wx
+import pygame
 
 def get_current_resolution() -> tuple[int, int]:
-    _ = wx.App(False)
-    display = wx.Display(0)
-    current_mode = display.GetCurrentMode()
-    return (current_mode.w, current_mode.h)
+    pygame.init()
+    info = pygame.display.Info()
+    return (info.current_w, info.current_h)
 
 def get_possible_resolutions() -> list[tuple[int, int]]:
-    _ = wx.App(False)
-    display = wx.Display(0)
-    modes = display.GetModes()
-    possible_resolutions = [(mode.w, mode.h) for mode in modes]
-    return possible_resolutions
+    pygame.init()
+    display_modes = pygame.display.list_modes()
+    return display_modes if display_modes else []
 
 def split_evenly(x: int) -> tuple[int, int]:
-    if (x // 2) % 2 == 0:
-        a = b = x // 2
-    else:
-        a = (x // 2) + 1
-        b = x - a  # Ensure a + b = x
+    a = (x // 2) + 1 if x % 2 != 0 else x // 2
+    b = x - a
     return a, b

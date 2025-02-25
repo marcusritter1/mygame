@@ -3,6 +3,7 @@ from pause import PauseMenu
 from quit_popup import QuitPopup
 from map import Map
 from util import split_evenly
+import numpy as np
 
 class Game:
     
@@ -21,26 +22,30 @@ class Game:
         self.y_velocity = 3  # Vertical speed of the animation"""
         
         self.tile_size = 50  # Each tile is 50x50 pixels
+        
         self.grid_width = game_resolution[0] // self.tile_size
+        if (game_resolution[0] / self.tile_size) > self.grid_width:
+            self.grid_width += 1
         self.grid_height = game_resolution[1] // self.tile_size
-        
-        
+        if (game_resolution[1] / self.tile_size) > self.grid_height:
+            self.grid_height += 1
+
         if self.map_tiles_width < self.grid_width:
             missing_tiles_width = self.grid_width - self.map_tiles_width
             missing_tiles_left, missing_tiles_right = split_evenly(missing_tiles_width)
-            print(missing_tiles_left, missing_tiles_right)
+            self.map.tile_grid = np.pad(self.map.tile_grid, pad_width=((0, 0), (missing_tiles_left, missing_tiles_right)), mode='constant', constant_values=0)
             
         if self.map_tiles_height < self.grid_height:
             missing_tiles_height = self.grid_height - self.map_tiles_height
             missing_tiles_bottom, missing_tiles_top = split_evenly(missing_tiles_height)
-            print(missing_tiles_bottom, missing_tiles_top)
-        
-        
-        print(self.grid_width, self.grid_height)
+            top_padding = np.zeros((missing_tiles_top, self.map.tile_grid.shape[1]), dtype=int)
+            bottom_padding = np.zeros((missing_tiles_bottom, self.map.tile_grid.shape[1]), dtype=int)
+            self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
         
         self.GREEN = (0, 255, 0)
         self.BLUE = (0, 0, 255)
         self.BLACK = (0, 0, 0)
+        self.WHITE = (255, 255, 255)
         
         self.tile_colors = {
             2: self.GREEN,  # Grass
@@ -71,7 +76,7 @@ class Game:
                     tile_type = self.map.tile_grid[row][col]
                     tile_rect = pygame.Rect(col * self.tile_size, row * self.tile_size, self.tile_size, self.tile_size)
                     pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
-                    pygame.draw.rect(self.screen, self.BLACK, tile_rect, 1)  # Grid outline
+                    pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
             pygame.display.flip()
 

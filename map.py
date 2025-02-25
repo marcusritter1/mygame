@@ -1,9 +1,10 @@
 import json
+import numpy as np
 
 class Map():
     
     def __init__(self):
-        self.map_save_file_path = "saved_maps/saved_map_2.json"
+        self.map_save_file_path = "saved_maps/saved_map_1.json"
         self.tile_grid = None
         
         self.load_map_from_json()
@@ -13,10 +14,10 @@ class Map():
             with open(self.map_save_file_path, 'r') as json_file:
                 data = json.load(json_file)
                 tile_grid = data.get("map", None)
-                self.tile_grid = tile_grid
+                self.tile_grid = np.array(tile_grid)
         except Exception as e:
             print(f"Error reading the file: {e}")
-            self.tile_grid = [
+            self.tile_grid = np.array([
                 [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -29,7 +30,7 @@ class Map():
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-            ]
+            ])
 
     def get_map_tiles_width(self) -> int:
         return len(self.tile_grid[0])

@@ -8,7 +8,6 @@
 
 ## map questions:
 
-* what to do if the map is too small for the screen?
 * how to scroll around map with mouse if it is bigger than the screen?
 * how to put textures for each tile
 * tiles in class objects and load in game class
