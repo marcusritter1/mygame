@@ -21,7 +21,7 @@ class Game:
         self.map_tiles_width = self.map.get_map_tiles_width()
         self.map_tiles_height = self.map.get_map_tiles_height()
 
-        self.scroll_speed = 1
+        self.scroll_speed = 4
         self.margin = 0.1    # margin in % for scroll area to screen border
 
         self.camera_x = 0
@@ -37,25 +37,28 @@ class Game:
         self.y_velocity = 3  # Vertical speed of the animation"""
         
         self.tile_size = 50  # Each tile is 50x50 pixels
-        
-        self.grid_width = game_resolution[0] // self.tile_size
-        if (game_resolution[0] / self.tile_size) > self.grid_width:
-            self.grid_width += 1
-        self.grid_height = game_resolution[1] // self.tile_size
-        if (game_resolution[1] / self.tile_size) > self.grid_height:
-            self.grid_height += 1
 
-        if self.map_tiles_width < self.grid_width:
-            missing_tiles_width = self.grid_width - self.map_tiles_width
+        # calculate max tiles width and height that will fit on the game screen
+        self.max_tiles_fit_screen_width = game_resolution[0] // self.tile_size
+        if (game_resolution[0] / self.tile_size) > self.max_tiles_fit_screen_width:
+            self.max_tiles_fit_screen_width += 1
+        self.max_tiles_fit_screen_height = game_resolution[1] // self.tile_size
+        if (game_resolution[1] / self.tile_size) > self.max_tiles_fit_screen_height:
+            self.max_tiles_fit_screen_height += 1
+
+        # if the map is smaller than the amount of tiles required to fill the game screen extend the map by padding it with empty tiles
+        if self.map_tiles_width < self.max_tiles_fit_screen_width:
+            missing_tiles_width = self.max_tiles_fit_screen_width - self.map_tiles_width
             missing_tiles_left, missing_tiles_right = split_evenly(missing_tiles_width)
             self.map.tile_grid = np.pad(self.map.tile_grid, pad_width=((0, 0), (missing_tiles_left, missing_tiles_right)), mode='constant', constant_values=0)
-            
-        if self.map_tiles_height < self.grid_height:
-            missing_tiles_height = self.grid_height - self.map_tiles_height
+            self.map_tiles_width = self.map.get_map_tiles_width()
+        if self.map_tiles_height < self.max_tiles_fit_screen_height:
+            missing_tiles_height = self.max_tiles_fit_screen_height - self.map_tiles_height
             missing_tiles_bottom, missing_tiles_top = split_evenly(missing_tiles_height)
             top_padding = np.zeros((missing_tiles_top, self.map.tile_grid.shape[1]), dtype=int)
             bottom_padding = np.zeros((missing_tiles_bottom, self.map.tile_grid.shape[1]), dtype=int)
             self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
+            self.map_tiles_height = self.map.get_map_tiles_height()
         
         self.GREEN = (0, 255, 0)
         self.BLUE = (0, 0, 255)
@@ -73,9 +76,15 @@ class Game:
             2: self.grass_texture  # grass
         }
 
-        #print(self.grid_width * self.tile_size, self.game_screen_width)
-        self.max_move_left_right = abs(self.game_screen_width - (self.grid_width * self.tile_size))
-        self.max_move_up_down = abs(self.game_screen_height - (self.grid_height * self.tile_size))
+        # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
+        if self.map_tiles_width < self.max_tiles_fit_screen_width:
+            self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.tile_size))
+        else:
+            self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.tile_size))
+        if self.map_tiles_height < self.max_tiles_fit_screen_height:
+            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.tile_size))
+        else:
+            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.tile_size))
 
     def run(self):
         while self.running:
@@ -89,22 +98,47 @@ class Game:
             # scroll right
             if mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
                 if self.camera_x > -(self.max_move_left_right):
-                    self.camera_x -= self.scroll_speed
+                    test_camera_x = self.camera_x - self.scroll_speed
+                    if test_camera_x < -(self.max_move_left_right):
+                        diff = abs(test_camera_x) - (self.max_move_left_right)
+                        move = self.scroll_speed - diff
+                        self.camera_x -= move
+                    else:
+                        self.camera_x -= self.scroll_speed
             
             # scroll left
             if mouse_x <= self.game_screen_width * self.margin:
                 if self.camera_x < 0:
-                    self.camera_x += self.scroll_speed
+                    test_camera_x = self.camera_x + self.scroll_speed
+                    if test_camera_x > 0:
+                        diff = 0 - abs(test_camera_x)
+                        move = self.scroll_speed + diff
+                        self.camera_x += move
+                    else:
+                        self.camera_x += self.scroll_speed
             
             # scroll up
             if mouse_y <= self.game_screen_height * self.margin:
                 if self.camera_y < 0:
-                    self.camera_y += self.scroll_speed
+                    # the adjustments seems not to be needed for this move
+                    test_camera_y = self.camera_y + self.scroll_speed
+                    if test_camera_y > 0:
+                        diff = 0 - abs(test_camera_y)
+                        move = self.scroll_speed + diff
+                        self.camera_y += move
+                    else:
+                        self.camera_y += self.scroll_speed
             
             # scroll down
             if mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
                 if self.camera_y > -(self.max_move_up_down):
-                    self.camera_y -= self.scroll_speed
+                    test_camera_y = self.camera_y - self.scroll_speed
+                    if test_camera_y < -(self.max_move_up_down):
+                        diff = abs(test_camera_y) - (self.max_move_up_down)
+                        move = self.scroll_speed - diff
+                        self.camera_y -= move
+                    else:
+                        self.camera_y -= self.scroll_speed
 
 
             """# Create a simple animated object (moving circle)
@@ -121,8 +155,8 @@ class Game:
                 self.y_velocity = -self.y_velocity  # Reverse vertical direction"""
                 
             # Loop over the visible portion of the grid and draw tiles
-            for row in range(self.grid_height):
-                for col in range(self.grid_width):
+            for row in range(self.map_tiles_height):
+                for col in range(self.map_tiles_width):
                     tile_type = self.map.tile_grid[row][col]
                     if tile_type != 0:
                         self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y))
