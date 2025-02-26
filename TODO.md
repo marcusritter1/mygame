@@ -1,12 +1,11 @@
-# TODO:
+# TODO
+
+## Ideas:
 
 * task to build executable
 * task to build virtualenv from requirements.txt
 * how to put background audio for menu
-* figure out how t oput pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
-
-* generate map that is large 
-* generate spawn point, place a house or something 
+* figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
 * click on object opens pop-up detail window in game screen 
 * map view in game screen, showing small version of entire map, with outline of current region shown on screen 
 * fog of war
@@ -26,17 +25,16 @@
 * create more types of tiles, e.g., different tree and vegetation tiles, then find algorithm to randomly generate forests on the map, I don't want to build super detailed maps by hand 
 * different types of background sounds: music, sound effects, menu option to turn them on off, set volume separately 
 
-## map questions:
+## Map related Questions:
 
 * how to make isometric tiles, grid, textures? -> LIKE IN ANNO?
 * move around map with arrow keys
 * tiles in class objects and load in game class
-* what happens when screen resolution is changed?
 * zoom in and out of map?
 * when in fullscreen and the game res is smaller than screen resolution game still scrolls around even it is not necessary...
     * ideally game would also be centered for this scenario.
 
-## multiplayer:
+## Multiplayer:
 
 * multiplayer menu to connect or join to a game lobby
 * menu to create a new game lobby 

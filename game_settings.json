@@ -2,8 +2,8 @@
     "graphics_settings": {
         "window_mode": "WINDOWED",
         "resolution": [
-            1024,
-            768
+            800,
+            600
         ]
     }
 }

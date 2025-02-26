@@ -16,6 +16,7 @@ class Game:
         # Load textures
         self.water_texture = pygame.image.load("assets/water.png").convert_alpha()
         self.grass_texture = pygame.image.load("assets/grass.png").convert_alpha()
+        self.house_texture = pygame.image.load("assets/house.png").convert_alpha()
         
         self.map = Map()
         self.map_tiles_width = self.map.get_map_tiles_width()
@@ -73,7 +74,8 @@ class Game:
 
         self.tile_textures = {
             1: self.water_texture,  # ocean
-            2: self.grass_texture  # grass
+            2: self.grass_texture,  # grass
+            3: self.house_texture   # house
         }
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
