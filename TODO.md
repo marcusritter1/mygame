@@ -6,7 +6,6 @@
 * task to build virtualenv from requirements.txt
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
-* click on object opens pop-up detail window in game screen 
 * map view in game screen, showing small version of entire map, with outline of current region shown on screen 
 * fog of war
 * spawn point for enemy, algorithm to figure out position or use fix spawn points embedded in the map

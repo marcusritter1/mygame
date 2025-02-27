@@ -28,9 +28,17 @@ class Game:
         self.camera_x = 0
         self.camera_y = 0
 
+        self.mouse_x = 0.0
+        self.mouse_y = 0.0
+        self.mouse_adjusted_x = 0.0
+        self.mouse_adjusted_y = 0.0
+        self.mouse_map_position_x = 0
+        self.mouse_map_position_y = 0
+
         self.game_screen_width = game_resolution[0]
         self.game_screen_height = game_resolution[1]
 
+        self.object_selected = False
         
         """self.x_pos = 100  # Starting position of the animated object (circle)
         self.y_pos = 100
@@ -61,10 +69,17 @@ class Game:
             self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
             self.map_tiles_height = self.map.get_map_tiles_height()
         
+        self.detail_view_width = 200
+        self.detail_view_height = 100
+        self.detail_view_text = ""
+
         self.GREEN = (0, 255, 0)
         self.BLUE = (0, 0, 255)
         self.BLACK = (0, 0, 0)
         self.WHITE = (255, 255, 255)
+        self.LIGHT_GRAY = (200, 200, 200)
+
+        self.font = pygame.font.Font(None, 24)
         
         self.tile_colors = {
             2: self.GREEN,  # Grass
@@ -93,12 +108,22 @@ class Game:
             self.screen.fill((0, 0, 0))
 
             # Get mouse position
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            #print("mouse x:",mouse_x, "mouse y:",mouse_y)
+            self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+            #print("mouse x:",self.mouse_x, "mouse y:",self.mouse_y)
             #print("camera_x:",self.camera_x, "camera_y:",self.camera_y)
 
+            # calculate the adjusted mouse position on the map, considers the camera offset
+            self.mouse_adjusted_x = self.mouse_x - self.camera_x
+            self.mouse_adjusted_y = self.mouse_y - self.camera_y
+            #print("mouse_adjusted_x:",self.mouse_adjusted_x, "mouse_adjusted_y:", self.mouse_adjusted_y)
+            
+            # calculate the grid position on the map the mouse is currently pointing at
+            self.mouse_map_position_x = self.mouse_adjusted_x // self.tile_size
+            self.mouse_map_position_y = self.mouse_adjusted_y // self.tile_size
+            #print("mouse_map_position_x:", self.mouse_map_position_x, "mouse_map_position_y:", self.mouse_map_position_y)
+
             # scroll right
-            if mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
+            if self.mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
                 if self.camera_x > -(self.max_move_left_right):
                     test_camera_x = self.camera_x - self.scroll_speed
                     if test_camera_x < -(self.max_move_left_right):
@@ -109,7 +134,7 @@ class Game:
                         self.camera_x -= self.scroll_speed
             
             # scroll left
-            if mouse_x <= self.game_screen_width * self.margin:
+            if self.mouse_x <= self.game_screen_width * self.margin:
                 if self.camera_x < 0:
                     test_camera_x = self.camera_x + self.scroll_speed
                     if test_camera_x > 0:
@@ -120,7 +145,7 @@ class Game:
                         self.camera_x += self.scroll_speed
             
             # scroll up
-            if mouse_y <= self.game_screen_height * self.margin:
+            if self.mouse_y <= self.game_screen_height * self.margin:
                 if self.camera_y < 0:
                     # the adjustments seems not to be needed for this move
                     test_camera_y = self.camera_y + self.scroll_speed
@@ -132,7 +157,7 @@ class Game:
                         self.camera_y += self.scroll_speed
             
             # scroll down
-            if mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
+            if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
                 if self.camera_y > -(self.max_move_up_down):
                     test_camera_y = self.camera_y - self.scroll_speed
                     if test_camera_y < -(self.max_move_up_down):
@@ -167,6 +192,12 @@ class Game:
                         pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
                         pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
+            # print detail view when object is selected
+            if self.object_selected:
+                pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, self.game_screen_height-self.detail_view_height, self.detail_view_width, self.detail_view_height))
+                text_surface = self.font.render(self.detail_view_text, True, self.BLACK)
+                self.screen.blit(text_surface, (15, self.game_screen_height-self.detail_view_height+15))
+
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -174,6 +205,15 @@ class Game:
                     if result == "exit":
                         self.running = False
                         return "menu"
+                    
+                # perform some action based on which tile is currently pointed at by the mouse
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.map.tile_grid[self.mouse_map_position_x][self.mouse_map_position_y] == 3:
+                        self.object_selected = True
+                        self.detail_view_text = "House. +5 gold every 10 seconds."
+                    else:
+                        self.object_selected = False
+                        self.detail_view_text = ""
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:
