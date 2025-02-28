@@ -1,10 +1,13 @@
 import pygame
-from quit_popup import QuitPopup
+from ingame_menu import InGameMenu
 
 class PauseMenu:
-    def __init__(self, screen):
+    def __init__(self, screen, game_screen_width, game_screen_height):
         self.screen = screen
         self.font = pygame.font.Font(None, 50)
+        self.clock = pygame.time.Clock()
+        self.game_screen_width = game_screen_width
+        self.game_screen_height = game_screen_height
 
     def run(self):
         # Capture the current screen contents (game background)
@@ -26,11 +29,13 @@ class PauseMenu:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    quit_popup = QuitPopup(self.screen)
-                    response = quit_popup.wait_for_response()
-                    if response == "Yes":
-                        return "exit"  # Signal to exit to the main menu
-                    elif response == "No":
+                    game_menu = InGameMenu(self.screen, self.game_screen_width, self.game_screen_height)
+                    response = game_menu.wait_for_response()
+                    if response == "exit":
+                        return "exit"
+                    elif response == "continue":
                         pass
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                     return  # Unpause and return to the game
+            
+            self.clock.tick(60)  # Limit to 60 FPS

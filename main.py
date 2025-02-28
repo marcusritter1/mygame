@@ -4,7 +4,6 @@ import pygame_gui
 from menu import Menu
 from game import Game
 from settings import Settings
-from quit_popup import QuitPopup
 from game_settings import GameSettings
 from game_enums import WindowMode
 from util import get_current_resolution, get_possible_resolutions
@@ -74,26 +73,7 @@ def main():
                     in_menu = True
 
         else:  # In the game loop
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:  # Handle window close
-                    quit_popup = QuitPopup(screen)
-                    response = quit_popup.wait_for_response()
-                    if response == "Yes":
-                        in_menu = True  # Go back to menu
-                    elif response == "No":
-                        pass # stay in game
-
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:  # Open QuitPopup on ESC
-                        quit_popup = QuitPopup(screen)
-                        response = quit_popup.wait_for_response()
-                        if response == "Yes":
-                            in_menu = True  # Go back to menu
-                        elif response == "No":
-                            pass  # Stay in game
-                    elif event.key == pygame.K_p:  # Pause the game on P key
-                        game.toggle_pause()
-
+        
             result = game.run()
             if result == "menu":
                 in_menu = True

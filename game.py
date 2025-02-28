@@ -1,6 +1,6 @@
 import pygame
 from pause import PauseMenu
-from quit_popup import QuitPopup
+from ingame_menu import InGameMenu
 from map import Map
 from util import split_evenly
 import numpy as np
@@ -37,6 +37,9 @@ class Game:
 
         self.game_screen_width = game_resolution[0]
         self.game_screen_height = game_resolution[1]
+
+        self.in_menu = False
+        self.game_menue = InGameMenu(self.screen, self.game_screen_width, self.game_screen_height)
 
         self.object_selected = False
         
@@ -105,6 +108,17 @@ class Game:
 
     def run(self):
         while self.running:
+
+            if self.in_menu:
+                
+                response = self.game_menue.wait_for_response()
+                if response == "exit":
+                    self.running = False
+                    return "menu"
+                elif response == "continue":
+                    self.in_menu = False
+                    return None
+
             self.screen.fill((0, 0, 0))
 
             # Get mouse position
@@ -201,10 +215,7 @@ class Game:
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    result = self.ask_quit()  # Show quit popup on window close
-                    if result == "exit":
-                        self.running = False
-                        return "menu"
+                    self.in_menu = True
                     
                 # perform some action based on which tile is currently pointed at by the mouse
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -219,14 +230,11 @@ class Game:
                     if event.key == pygame.K_p:
                         self.toggle_pause()
                     elif event.key == pygame.K_ESCAPE:
-                        result = self.ask_quit()  # Show quit popup on window close
-                        if result == "exit":
-                            self.running = False
-                            return "menu"
+                        self.in_menu = True
 
             # Show the pause menu if the game is paused
             if self.paused:
-                pause_menu = PauseMenu(self.screen)
+                pause_menu = PauseMenu(self.screen, self.game_screen_width, self.game_screen_height)
                 response = pause_menu.run()  # Pause menu blocks until resumed
                 if response == "exit":
                     return "menu"
@@ -240,12 +248,4 @@ class Game:
         """Toggles pause state."""
         self.paused = not self.paused
 
-    def ask_quit(self):
-        """Shows quit confirmation menu and processes response."""
-        quit_popup = QuitPopup(self.screen)
-        response = quit_popup.wait_for_response()
-        if response == "Yes":
-            return "exit"  # Signal to exit to the main menu
-        elif response == "No":
-            return None  # Stay in the game
-
+  
