@@ -13,6 +13,16 @@ class Game:
         self.running = True
         self.paused = False
 
+        
+        ### GAME STATS ###
+        self.gold = 500
+        ##################
+
+        self.last_update_time = pygame.time.get_ticks()  # Get initial time
+        self.update_interval = 10000  # 10 seconds in milliseconds
+
+        self.game_stats_bar_height = 30
+
         # Load textures
         self.water_texture = pygame.image.load("assets/water.png").convert_alpha()
         self.grass_texture = pygame.image.load("assets/grass.png").convert_alpha()
@@ -212,6 +222,11 @@ class Game:
                 text_surface = self.font.render(self.detail_view_text, True, self.BLACK)
                 self.screen.blit(text_surface, (15, self.game_screen_height-self.detail_view_height+15))
 
+            # print a bar in the top of the game showing the game stats
+            pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, 0, self.game_screen_width, self.game_stats_bar_height))
+            text_surface = self.font.render("Gold: "+str(self.gold), True, self.BLACK)
+            self.screen.blit(text_surface, (15, 10))
+
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -241,6 +256,14 @@ class Game:
                 else:
                     self.paused = False  # Unpause after returning from pause menu
             
+            # Check if 10 seconds have passed
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_update_time >= self.update_interval:
+                num_houses = self.map.get_num_houses()
+                gold_increase = num_houses * 5
+                self.gold += gold_increase  # Increase gold resource stat
+                self.last_update_time = current_time  # Reset timer
+
             pygame.display.flip()
             self.clock.tick(60)  # Limit to 60 FPS
 
