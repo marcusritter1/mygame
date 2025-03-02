@@ -9,7 +9,7 @@
 * fog of war
 * spawn point for enemy, algorithm to figure out position or use fix spawn points embedded in the map
 * building menu, with a building that can be placed on the map, then building is displayed on map instead of previous texture, is registered in map object, saved on game save.
-* option in game to save and load a game, how to save all changes of the running game, json files?
+* option in game to save and load a game
 * option in Menu to load a saved game and start it
 * add a basic loose or win condition to the game, win when gold > 1000, loose if it is < -300.
 * add a tool to the building menu to remove a building, again map needs to be updated 
@@ -35,4 +35,56 @@
 
 ## Engie
 
-* hot to utilize OpenGL in python to accelerate rendering with GPU?
+* how to utilize OpenGL in python to accelerate rendering with GPU?
+* isometrics:
+    * pygame does not support z-order, so the last element drawn is always on top...
+    * https://www.youtube.com/watch?v=gE2gTCwLdFM
+    * https://www.youtube.com/watch?v=QpW6kC75aUA
+
+    ```
+    import pygame
+
+    # Initialize pygame
+    pygame.init()
+
+    # Constants
+    TILE_WIDTH = 64
+    TILE_HEIGHT = 32
+    MAP_WIDTH = 10
+    MAP_HEIGHT = 10
+    SCREEN_WIDTH = 800
+    SCREEN_HEIGHT = 600
+
+    # Create screen
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    # Load tile texture
+    tile_img = pygame.image.load("tile.png").convert_alpha()
+
+    # Convert grid coordinates to isometric
+    def cart_to_iso(x, y):
+        iso_x = (x - y) * TILE_WIDTH // 2 + SCREEN_WIDTH // 2
+        iso_y = (x + y) * TILE_HEIGHT // 2
+        return iso_x, iso_y
+
+    # Game loop
+    running = True
+    while running:
+        screen.fill((50, 50, 50))  # Background color
+
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Draw map
+        for y in range(MAP_HEIGHT):
+            for x in range(MAP_WIDTH):
+                iso_x, iso_y = cart_to_iso(x, y)
+                screen.blit(tile_img, (iso_x, iso_y))
+
+        pygame.display.flip()
+
+    pygame.quit()
+
+    ```
