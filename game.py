@@ -52,6 +52,8 @@ class Game:
         self.game_menue = InGameMenu(self.screen, self.game_screen_width, self.game_screen_height)
 
         self.object_selected = False
+        self.selected_object_map_position_x = 0
+        self.selected_object_map_position_y = 0
         
         """self.x_pos = 100  # Starting position of the animated object (circle)
         self.y_pos = 100
@@ -216,8 +218,14 @@ class Game:
                         pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
                         pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
-            # print detail view when object is selected
+            # when object is selected
             if self.object_selected:
+                
+                # highlight the selected object
+                rect = pygame.Rect((self.selected_object_map_position_x * self.tile_size) + self.camera_x, (self.selected_object_map_position_y * self.tile_size) + self.camera_y, self.tile_size, self.tile_size)
+                pygame.draw.rect(self.screen, (0, 255, 0), rect, 5) 
+
+                # print detail view
                 pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, self.game_screen_height-self.detail_view_height, self.detail_view_width, self.detail_view_height))
                 text_surface = self.font.render(self.detail_view_text, True, self.BLACK)
                 self.screen.blit(text_surface, (15, self.game_screen_height-self.detail_view_height+15))
@@ -226,6 +234,47 @@ class Game:
             pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, 0, self.game_screen_width, self.game_stats_bar_height))
             text_surface = self.font.render("Gold: "+str(self.gold), True, self.BLACK)
             self.screen.blit(text_surface, (15, 10))
+
+            # the following code is for moving the camera with WASD keys
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_w]:
+                if self.camera_y < 0:
+                    # the adjustments seems not to be needed for this move
+                    test_camera_y = self.camera_y + self.scroll_speed
+                    if test_camera_y > 0:
+                        diff = 0 - abs(test_camera_y)
+                        move = self.scroll_speed + diff
+                        self.camera_y += move
+                    else:
+                        self.camera_y += self.scroll_speed
+            if keys[pygame.K_a]:
+                if self.camera_x < 0:
+                    test_camera_x = self.camera_x + self.scroll_speed
+                    if test_camera_x > 0:
+                        diff = 0 - abs(test_camera_x)
+                        move = self.scroll_speed + diff
+                        self.camera_x += move
+                    else:
+                        self.camera_x += self.scroll_speed
+            if keys[pygame.K_s]:
+                if self.camera_y > -(self.max_move_up_down):
+                    test_camera_y = self.camera_y - self.scroll_speed
+                    if test_camera_y < -(self.max_move_up_down):
+                        diff = abs(test_camera_y) - (self.max_move_up_down)
+                        move = self.scroll_speed - diff
+                        self.camera_y -= move
+                    else:
+                        self.camera_y -= self.scroll_speed
+            if keys[pygame.K_d]:
+                if self.camera_x > -(self.max_move_left_right):
+                    test_camera_x = self.camera_x - self.scroll_speed
+                    if test_camera_x < -(self.max_move_left_right):
+                        diff = abs(test_camera_x) - (self.max_move_left_right)
+                        move = self.scroll_speed - diff
+                        self.camera_x -= move
+                    else:
+                        self.camera_x -= self.scroll_speed
+                    
 
             # Handle events
             for event in pygame.event.get():
@@ -236,6 +285,8 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.map.tile_grid[self.mouse_map_position_x][self.mouse_map_position_y] == 3:
                         self.object_selected = True
+                        self.selected_object_map_position_x = self.mouse_map_position_x
+                        self.selected_object_map_position_y = self.mouse_map_position_y
                         self.detail_view_text = "House. +5 gold every 10 seconds."
                     else:
                         self.object_selected = False
@@ -244,8 +295,46 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:
                         self.toggle_pause()
-                    elif event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_ESCAPE:
                         self.in_menu = True
+                    # the following code is for moving the camera with WASD keys
+                    if event.key == pygame.K_w:
+                        if self.camera_y < 0:
+                            # the adjustments seems not to be needed for this move
+                            test_camera_y = self.camera_y + self.scroll_speed
+                            if test_camera_y > 0:
+                                diff = 0 - abs(test_camera_y)
+                                move = self.scroll_speed + diff
+                                self.camera_y += move
+                            else:
+                                self.camera_y += self.scroll_speed
+                    if event.key == pygame.K_a:
+                        if self.camera_x < 0:
+                            test_camera_x = self.camera_x + self.scroll_speed
+                            if test_camera_x > 0:
+                                diff = 0 - abs(test_camera_x)
+                                move = self.scroll_speed + diff
+                                self.camera_x += move
+                            else:
+                                self.camera_x += self.scroll_speed
+                    if event.key == pygame.K_s:
+                        if self.camera_y > -(self.max_move_up_down):
+                            test_camera_y = self.camera_y - self.scroll_speed
+                            if test_camera_y < -(self.max_move_up_down):
+                                diff = abs(test_camera_y) - (self.max_move_up_down)
+                                move = self.scroll_speed - diff
+                                self.camera_y -= move
+                            else:
+                                self.camera_y -= self.scroll_speed
+                    if event.key == pygame.K_d:
+                        if self.camera_x > -(self.max_move_left_right):
+                            test_camera_x = self.camera_x - self.scroll_speed
+                            if test_camera_x < -(self.max_move_left_right):
+                                diff = abs(test_camera_x) - (self.max_move_left_right)
+                                move = self.scroll_speed - diff
+                                self.camera_x -= move
+                            else:
+                                self.camera_x -= self.scroll_speed
 
             # Show the pause menu if the game is paused
             if self.paused:

@@ -21,6 +21,7 @@ def main():
     icon = pygame.image.load("icon.ico")
     
     pygame.init()
+
     WIDTH, HEIGHT = game_resolution[0], game_resolution[1]
     
     pygame.display.set_icon(icon)

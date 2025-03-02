@@ -14,7 +14,6 @@
 * add a basic loose or win condition to the game, win when gold > 1000, loose if it is < -300.
 * add a tool to the building menu to remove a building, again map needs to be updated 
 * how to add animations to the map, like a water animation for the ocean to make it look like waves or flowing or a tree that is moving in the wind.
-* how to click on an object on the map like a house with the mouse to then do something? the entire tile should register the mouse click.
 * objects that make up more than one tile. design a house 2.0 that uses 2x2 tiles and registers a click on it on each of its tiles
 * turn the camera by a fix angle, e.g., 90° intervals or is it possible to turn it freely?
 * basic game ai like an animal moving around, e.g. a wild boar, collision detection, does not hit go on ocean tiles for example 
@@ -24,7 +23,6 @@
 ## Map related Questions:
 
 * how to make isometric tiles, grid, textures? -> LIKE IN ANNO?
-* move around map with arrow keys
 * tiles in class objects and load in game class
 * zoom in and out of map?
 * when in fullscreen and the game res is smaller than screen resolution game still scrolls around even it is not necessary...
@@ -34,3 +32,7 @@
 
 * multiplayer menu to connect or join to a game lobby
 * menu to create a new game lobby 
+
+## Engie
+
+* hot to utilize OpenGL in python to accelerate rendering with GPU?
