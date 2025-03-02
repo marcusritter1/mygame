@@ -1,4 +1,5 @@
-game/
+game_env/
+dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

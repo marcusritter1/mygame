@@ -2,9 +2,7 @@
 
 ## Ideas:
 
-* introduce a basic game stat like a currency, the house building can give +10 gold every 10 seconds when game is running. stats need to be saved and loaded, consider amount of houses 
-* task to build executable
-* task to build virtualenv from requirements.txt
+* game stats need to be saved and loaded with the savegame
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
 * map view in game screen, showing small version of entire map, with outline of current region shown on screen 
