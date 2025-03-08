@@ -7,6 +7,7 @@ from settings import Settings
 from game_settings import GameSettings
 from game_enums import WindowMode
 from util import get_current_resolution, get_possible_resolutions
+from save_games import load_savegame
 
 def main():
     
@@ -56,10 +57,14 @@ def main():
                 action = menu.handle_event(event)
                 if action == "start":
                     in_menu = False
-                    game = Game(screen, game_resolution)
+                    game = Game(screen, game_resolution, new_game=True)
                 elif action == "settings":
                     in_menu = False
                     in_settings = True
+                elif action == "load":
+                    in_menu = False
+                    loaded_save = load_savegame()
+                    game = Game(screen, game_resolution, new_game=False, game_stats=loaded_save.game_stats)
                 elif action == "exit":  # Directly quit, no popup
                     in_menu = False
                     running = False  

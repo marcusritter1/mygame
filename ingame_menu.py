@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+from save_games import SaveGame
 
 class InGameMenu:
     def __init__(self, screen, WIDTH, HEIGHT):
@@ -9,21 +10,18 @@ class InGameMenu:
         self.options = ["continue", "save_game", "exit"]
         self.selected_index = 0
 
-        # Start button
         self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, 150), (200, 60)),
             text='Continue',
             manager=self.manager
         )
         
-        # Settings button
         self.save_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, 250), (200, 60)),
             text='Save game',
             manager=self.manager
         )
         
-        # Exit button
         self.exit_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, 350), (200, 60)),
             text='Exit',
@@ -77,7 +75,7 @@ class InGameMenu:
                 button.set_text(button.text.replace("> ", "").replace(" <", ""))
 
 
-    def wait_for_response(self):
+    def wait_for_response(self, game_stats):
         while True:
             time_delta = pygame.time.Clock().tick(60) / 1000.0  # Frame rate
             self.manager.update(time_delta)
@@ -90,5 +88,8 @@ class InGameMenu:
                     return "continue"
                 elif response == "exit":
                     return "exit"
+                elif response == "save_game":
+                    self.save_game = SaveGame(game_stats=game_stats)
+                    self.save_game.save_savegame()
                 else:
                     pass

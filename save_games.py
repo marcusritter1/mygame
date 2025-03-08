@@ -2,17 +2,16 @@ from datetime import datetime
 import uuid
 from uuid import UUID
 import json
+from game_stats import GameStats
 
 class SaveGame():
 
-    def __init__(self, id: UUID = None, time: str = None, date: str = None, gold: int = 0) -> None:
+    def __init__(self, id: UUID = None, time: str = None, date: str = None, game_stats: GameStats = None) -> None:
 
         self.id = id
         self.time = time
         self.date = date
-        
-        # set the value saved in the save game
-        self.gold = gold
+        self.game_stats = game_stats
 
         self.data = {}
 
@@ -30,7 +29,7 @@ class SaveGame():
         self.data["id"] = str(self.id)
         self.data["date"] = self.date
         self.data["time"] = self.time
-        self.data["gold"] = self.gold
+        self.data["gold"] = self.game_stats.gold
 
     def save_savegame(self) -> None:
         self.generate_savegame_id()
@@ -48,15 +47,16 @@ def load_savegame() -> SaveGame:
     try:
         with open("save_games/save_game_1.json", 'r') as file:
             data = json.load(file)
-            return SaveGame(UUID(data["id"]), data["time"], data["date"], data["gold"])
+            game_stats = GameStats(gold=data["gold"])
+            return SaveGame(UUID(data["id"]), data["time"], data["date"], game_stats)
         
     except Exception as e:
         print(f"Error reading the file: {e}")
 
 
 
-save = SaveGame(gold=500)
+"""save = SaveGame()
 save.save_savegame()
-
-loaded_save = load_savegame()
-print(str(loaded_save.id), loaded_save.time, loaded_save.date, loaded_save.gold)
+"""
+"""loaded_save = load_savegame()
+print(str(loaded_save.id), loaded_save.time, loaded_save.date, loaded_save.game_stats.gold)"""

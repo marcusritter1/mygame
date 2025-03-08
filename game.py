@@ -4,19 +4,21 @@ from ingame_menu import InGameMenu
 from map import Map
 from util import split_evenly
 import numpy as np
+from game_stats import GameStats
+
 
 class Game:
     
-    def __init__(self, screen, game_resolution):
+    def __init__(self, screen, game_resolution, new_game: bool = True, game_stats: GameStats = None):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
 
-        
-        ### GAME STATS ###
-        self.gold = 500
-        ##################
+        if new_game:
+            self.game_stats = GameStats(gold=500)
+        else:
+            self.game_stats = game_stats
 
         self.last_update_time = pygame.time.get_ticks()  # Get initial time
         self.update_interval = 10000  # 10 seconds in milliseconds
@@ -123,7 +125,7 @@ class Game:
 
             if self.in_menu:
                 
-                response = self.game_menue.wait_for_response()
+                response = self.game_menue.wait_for_response(self.game_stats)
                 if response == "exit":
                     self.running = False
                     return "menu"
@@ -232,7 +234,7 @@ class Game:
 
             # print a bar in the top of the game showing the game stats
             pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, 0, self.game_screen_width, self.game_stats_bar_height))
-            text_surface = self.font.render("Gold: "+str(self.gold), True, self.BLACK)
+            text_surface = self.font.render("Gold: "+str(self.game_stats.gold), True, self.BLACK)
             self.screen.blit(text_surface, (15, 10))
 
             # the following code is for moving the camera with WASD keys
@@ -350,7 +352,7 @@ class Game:
             if current_time - self.last_update_time >= self.update_interval:
                 num_houses = self.map.get_num_houses()
                 gold_increase = num_houses * 5
-                self.gold += gold_increase  # Increase gold resource stat
+                self.game_stats.gold += gold_increase  # Increase gold resource stat
                 self.last_update_time = current_time  # Reset timer
 
             pygame.display.flip()

@@ -2,15 +2,12 @@
 
 ## Ideas:
 
-* game stats need to be saved and loaded with the savegame
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
 * map view in game screen, showing small version of entire map, with outline of current region shown on screen 
 * fog of war
 * spawn point for enemy, algorithm to figure out position or use fix spawn points embedded in the map
 * building menu, with a building that can be placed on the map, then building is displayed on map instead of previous texture, is registered in map object, saved on game save.
-* option in game to save and load a game
-* option in Menu to load a saved game and start it
 * add a basic loose or win condition to the game, win when gold > 1000, loose if it is < -300.
 * add a tool to the building menu to remove a building, again map needs to be updated 
 * how to add animations to the map, like a water animation for the ocean to make it look like waves or flowing or a tree that is moving in the wind.
@@ -19,6 +16,12 @@
 * basic game ai like an animal moving around, e.g. a wild boar, collision detection, does not hit go on ocean tiles for example 
 * create more types of tiles, e.g., different tree and vegetation tiles, then find algorithm to randomly generate forests on the map, I don't want to build super detailed maps by hand 
 * different types of background sounds: music, sound effects, menu option to turn them on off, set volume separately 
+
+## UI & Menus
+
+* have a in game stats window that show per minuete stats of game, e.g., gold income positive or negative atm...
+* Have a menu for saving a game, where one can write savegame name and save it or even override existing savegame
+* similar menu for loading save game where you can see all existing save games by date, time, and name, select one and load it, maybe even delete one...
 
 ## Map related Questions:
 
