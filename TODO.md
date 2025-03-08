@@ -8,7 +8,6 @@
 * fog of war
 * spawn point for enemy, algorithm to figure out position or use fix spawn points embedded in the map
 * building menu, with a building that can be placed on the map, then building is displayed on map instead of previous texture, is registered in map object, saved on game save.
-* add a basic loose or win condition to the game, win when gold > 1000, loose if it is < -300.
 * add a tool to the building menu to remove a building, again map needs to be updated 
 * how to add animations to the map, like a water animation for the ocean to make it look like waves or flowing or a tree that is moving in the wind.
 * objects that make up more than one tile. design a house 2.0 that uses 2x2 tiles and registers a click on it on each of its tiles
@@ -19,6 +18,7 @@
 
 ## UI & Menus
 
+* add game win and loose screens
 * have a in game stats window that show per minuete stats of game, e.g., gold income positive or negative atm...
 * Have a menu for saving a game, where one can write savegame name and save it or even override existing savegame
 * similar menu for loading save game where you can see all existing save games by date, time, and name, select one and load it, maybe even delete one...
