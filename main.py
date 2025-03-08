@@ -8,6 +8,8 @@ from game_settings import GameSettings
 from game_enums import WindowMode
 from util import get_current_resolution, get_possible_resolutions
 from save_games import load_savegame
+from win_screen import WinScreen
+from lost_screen import LostScreen
 
 def main():
     
@@ -39,10 +41,15 @@ def main():
     
     menu = Menu(screen, WIDTH, HEIGHT)
     settings = Settings(screen, WIDTH, HEIGHT, resolutions_list, game_settings)
+    win_screen = WinScreen(screen, WIDTH, HEIGHT)
+    lost_screen = LostScreen(screen, WIDTH, HEIGHT)
+
     game = None
     running = True
     in_menu = True
     in_settings = False
+    won = False
+    lost = False
 
     while running:
         time_delta = pygame.time.Clock().tick(60) / 1000.0  # Frame rate
@@ -76,15 +83,53 @@ def main():
                 action = settings.handle_event(event)
                 if action == "back_to_menu":
                     in_settings = False
+                    lost = False
+                    won = False
+                    in_menu = True
+
+        elif won:
+            win_screen.manager.update(time_delta)
+            win_screen.draw()
+            for event in pygame.event.get():
+                action = win_screen.handle_event(event)
+                if action == "back_to_menu":
+                    in_settings = False
+                    lost = False
+                    won = False
+                    in_menu = True
+
+        elif lost:
+            lost_screen.manager.update(time_delta)
+            lost_screen.draw()
+            for event in pygame.event.get():
+                action = lost_screen.handle_event(event)
+                if action == "back_to_menu":
+                    in_settings = False
+                    lost = False
+                    won = False
                     in_menu = True
 
         else:  # In the game loop
         
             result = game.run()
             if result == "menu":
+                in_settings = False
+                lost = False
+                won = False
                 in_menu = True
             elif result == "exit":
+                in_settings = False
+                lost = False
+                won = False
                 running = False
+            elif result == "game_won":
+                won = True
+                in_settings = False
+                in_menu = False
+            elif result == "game_lost":
+                lost = True
+                in_settings = False
+                in_menu = False
 
     pygame.quit()
 

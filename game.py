@@ -16,7 +16,7 @@ class Game:
         self.paused = False
 
         if new_game:
-            self.game_stats = GameStats(gold=-290)
+            self.game_stats = GameStats(gold=500)
         else:
             self.game_stats = game_stats
 
@@ -126,12 +126,12 @@ class Game:
             # win condition
             if self.game_stats.gold >= 1000:
                 self.running = False
-                return "menu"
+                return "game_won"
 
             # loose condition
             if self.game_stats.gold <= -300:
                 self.running = False
-                return "menu"
+                return "game_lost"
 
             if self.in_menu:
                 
@@ -362,7 +362,7 @@ class Game:
             if current_time - self.last_update_time >= self.update_interval:
                 num_houses = self.map.get_num_houses()
                 gold_increase = num_houses * 5
-                self.game_stats.gold -= gold_increase  # Increase gold resource stat
+                self.game_stats.gold += gold_increase  # Increase gold resource stat
                 self.last_update_time = current_time  # Reset timer
 
             pygame.display.flip()

@@ -18,7 +18,6 @@
 
 ## UI & Menus
 
-* add game win and loose screens
 * have a in game stats window that show per minuete stats of game, e.g., gold income positive or negative atm...
 * Have a menu for saving a game, where one can write savegame name and save it or even override existing savegame
 * similar menu for loading save game where you can see all existing save games by date, time, and name, select one and load it, maybe even delete one...
