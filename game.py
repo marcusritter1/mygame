@@ -2,7 +2,7 @@ import pygame
 from pause import PauseMenu
 from ingame_menu import InGameMenu
 from map import Map
-from util import split_evenly
+from util import split_evenly, cart_to_iso, screen_to_iso
 import numpy as np
 from game_stats import GameStats
 
@@ -26,9 +26,12 @@ class Game:
         self.game_stats_bar_height = 30
 
         # Load textures
-        self.water_texture = pygame.image.load("assets/water.png").convert_alpha()
-        self.grass_texture = pygame.image.load("assets/grass.png").convert_alpha()
-        self.house_texture = pygame.image.load("assets/house.png").convert_alpha()
+        self.water_texture = pygame.image.load("assets/tileset/tiles/tile_104.png").convert_alpha()
+        self.grass_texture = pygame.image.load("assets/tileset/tiles/tile_022.png").convert_alpha()
+        self.house_texture = pygame.image.load("assets/tileset/tiles/tile_044.png").convert_alpha()
+
+        #DEBUG
+        #print(self.water_texture.get_width(), self.water_texture.get_height())
         
         self.map = Map()
         self.map_tiles_width = self.map.get_map_tiles_width()
@@ -62,7 +65,16 @@ class Game:
         self.x_velocity = 5  # Speed of the animation (movement per frame)
         self.y_velocity = 3  # Vertical speed of the animation"""
         
-        self.tile_size = 50  # Each tile is 50x50 pixels
+        self.tile_size = 32
+
+        # Compute the total isometric map size
+        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 2)
+        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 4)
+
+        #TODO: DEBUG
+        # Initialize camera position to center the map
+        #self.camera_x = self.iso_map_width // 2 - self.game_screen_width // 2
+        #self.camera_y = self.iso_map_height // 2 - self.game_screen_height // 2
 
         # calculate max tiles width and height that will fit on the game screen
         self.max_tiles_fit_screen_width = game_resolution[0] // self.tile_size
@@ -110,11 +122,23 @@ class Game:
             3: self.house_texture   # house
         }
 
+        # Calculate the isometric map size
+        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 2)
+        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 4)
+
+        # Calculate max movement in all directions
+        self.max_move_left = 0  # The left edge of the map
+        self.max_move_right = self.iso_map_width - self.game_screen_width  # Right boundary
+        self.max_move_up = 0  # The top edge of the map
+        self.max_move_down = self.iso_map_height - self.game_screen_height  # Bottom boundary
+
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
-            self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.tile_size))
+            #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.tile_size))
+            self.max_move_left_right = self.iso_map_width - self.game_screen_width
         else:
-            self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.tile_size))
+            #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.tile_size))
+            self.max_move_left_right = self.iso_map_width - self.game_screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
             self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.tile_size))
         else:
@@ -156,8 +180,10 @@ class Game:
             #print("mouse_adjusted_x:",self.mouse_adjusted_x, "mouse_adjusted_y:", self.mouse_adjusted_y)
             
             # calculate the grid position on the map the mouse is currently pointing at
-            self.mouse_map_position_x = self.mouse_adjusted_x // self.tile_size
-            self.mouse_map_position_y = self.mouse_adjusted_y // self.tile_size
+            #screen_to_iso(mouse_x, mouse_y, tile_size, screen_width, screen_height, camera_x, camera_y)
+            self.mouse_map_position_x, self.mouse_map_position_y = screen_to_iso(self.mouse_adjusted_x, self.mouse_adjusted_y, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+            #self.mouse_map_position_x = self.mouse_adjusted_x // self.tile_size
+            #self.mouse_map_position_y = self.mouse_adjusted_y // self.tile_size
             #print("mouse_map_position_x:", self.mouse_map_position_x, "mouse_map_position_y:", self.mouse_map_position_y)
 
             # scroll right
@@ -219,14 +245,21 @@ class Game:
             if self.y_pos >= self.screen.get_height() - 20 or self.y_pos <= 20:
                 self.y_velocity = -self.y_velocity  # Reverse vertical direction"""
                 
-            # Loop over the visible portion of the grid and draw tiles
+            # Loop over the grid and draw tiles
+            #TODO: should only draw tiles that are visible in the camera viewport and maybe one more tile!
             for row in range(self.map_tiles_height):
                 for col in range(self.map_tiles_width):
                     tile_type = self.map.tile_grid[row][col]
                     if tile_type != 0:
-                        self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y))
+                        x = col * self.tile_size + self.camera_x
+                        y = row * self.tile_size + self.camera_y
+                        iso_x, iso_y = cart_to_iso(col, row, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                        self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
                     else:
-                        tile_rect = pygame.Rect(col * self.tile_size + self.camera_x, row * self.tile_size + self.camera_y, self.tile_size, self.tile_size)
+                        x = col * self.tile_size + self.camera_x
+                        y = row * self.tile_size + self.camera_y
+                        iso_x, iso_y = cart_to_iso(col, row, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                        tile_rect = pygame.Rect(iso_x, iso_y, self.tile_size, self.tile_size)
                         pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
                         pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
@@ -295,14 +328,18 @@ class Game:
                     
                 # perform some action based on which tile is currently pointed at by the mouse
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.map.tile_grid[self.mouse_map_position_x][self.mouse_map_position_y] == 3:
-                        self.object_selected = True
-                        self.selected_object_map_position_x = self.mouse_map_position_x
-                        self.selected_object_map_position_y = self.mouse_map_position_y
-                        self.detail_view_text = "House. +5 gold every 10 seconds."
-                    else:
-                        self.object_selected = False
-                        self.detail_view_text = ""
+                    #print("map width:",self.map.get_map_tiles_width(), "map height:",self.map.get_map_tiles_height())
+                    #print("self.mouse_map_position_x:",self.mouse_map_position_x,"self.mouse_map_position_y:",self.mouse_map_position_y)
+                    if self.mouse_map_position_x < self.map.get_map_tiles_width() and self.mouse_map_position_x >= 0 and self.mouse_map_position_y < self.map.get_map_tiles_height() and self.mouse_map_position_y >= 0:
+                        print(self.map.tile_grid[self.mouse_map_position_y][self.mouse_map_position_x])
+                        if self.map.tile_grid[self.mouse_map_position_y][self.mouse_map_position_x] == 3:
+                            self.object_selected = True
+                            self.selected_object_map_position_x = self.mouse_map_position_x
+                            self.selected_object_map_position_y = self.mouse_map_position_y
+                            self.detail_view_text = "House. +5 gold every 10 seconds."
+                        else:
+                            self.object_selected = False
+                            self.detail_view_text = ""
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:

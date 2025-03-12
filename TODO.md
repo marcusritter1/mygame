@@ -2,6 +2,7 @@
 
 ## Ideas:
 
+* need to fix all of the calculations that don't work anymore now because of isometric view...
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
 * map view in game screen, showing small version of entire map, with outline of current region shown on screen 

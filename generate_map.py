@@ -10,8 +10,8 @@ import json
 data = {}
 data["map"] = []
 
-num_rows = 25
-num_cols = 25
+num_rows = 50
+num_cols = 50
 
 for col in range(num_cols):
     x = []
