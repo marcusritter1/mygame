@@ -5,5 +5,11 @@
             800,
             600
         ]
+    },
+    "game_settings": {
+        "texture_size": {
+          "height": 32,
+          "width": 32
+        }
     }
 }

@@ -5,15 +5,17 @@ from map import Map
 from util import split_evenly, cart_to_iso, screen_to_iso
 import numpy as np
 from game_stats import GameStats
+from game_settings import GameSettings
 
 
 class Game:
-    
-    def __init__(self, screen, game_resolution, new_game: bool = True, game_stats: GameStats = None):
+
+    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
+        self.game_settings = game_settings
 
         if new_game:
             self.game_stats = GameStats(gold=500)
@@ -32,7 +34,7 @@ class Game:
 
         #DEBUG
         #print(self.water_texture.get_width(), self.water_texture.get_height())
-        
+
         self.map = Map()
         self.map_tiles_width = self.map.get_map_tiles_width()
         self.map_tiles_height = self.map.get_map_tiles_height()
@@ -59,17 +61,17 @@ class Game:
         self.object_selected = False
         self.selected_object_map_position_x = 0
         self.selected_object_map_position_y = 0
-        
+
         """self.x_pos = 100  # Starting position of the animated object (circle)
         self.y_pos = 100
         self.x_velocity = 5  # Speed of the animation (movement per frame)
         self.y_velocity = 3  # Vertical speed of the animation"""
-        
-        self.tile_size = 32
+
+        self.texture_size = self.game_settings.texture_size[0]
 
         # Compute the total isometric map size
-        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 2)
-        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 4)
+        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
+        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 4)
 
         #TODO: DEBUG
         # Initialize camera position to center the map
@@ -77,11 +79,11 @@ class Game:
         #self.camera_y = self.iso_map_height // 2 - self.game_screen_height // 2
 
         # calculate max tiles width and height that will fit on the game screen
-        self.max_tiles_fit_screen_width = game_resolution[0] // self.tile_size
-        if (game_resolution[0] / self.tile_size) > self.max_tiles_fit_screen_width:
+        self.max_tiles_fit_screen_width = game_resolution[0] // self.texture_size
+        if (game_resolution[0] / self.texture_size) > self.max_tiles_fit_screen_width:
             self.max_tiles_fit_screen_width += 1
-        self.max_tiles_fit_screen_height = game_resolution[1] // self.tile_size
-        if (game_resolution[1] / self.tile_size) > self.max_tiles_fit_screen_height:
+        self.max_tiles_fit_screen_height = game_resolution[1] // self.texture_size
+        if (game_resolution[1] / self.texture_size) > self.max_tiles_fit_screen_height:
             self.max_tiles_fit_screen_height += 1
 
         # if the map is smaller than the amount of tiles required to fill the game screen extend the map by padding it with empty tiles
@@ -97,7 +99,7 @@ class Game:
             bottom_padding = np.zeros((missing_tiles_bottom, self.map.tile_grid.shape[1]), dtype=int)
             self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
             self.map_tiles_height = self.map.get_map_tiles_height()
-        
+
         self.detail_view_width = 200
         self.detail_view_height = 100
         self.detail_view_text = ""
@@ -109,7 +111,7 @@ class Game:
         self.LIGHT_GRAY = (200, 200, 200)
 
         self.font = pygame.font.Font(None, 24)
-        
+
         self.tile_colors = {
             2: self.GREEN,  # Grass
             1: self.BLUE,   # Ocean
@@ -123,8 +125,8 @@ class Game:
         }
 
         # Calculate the isometric map size
-        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 2)
-        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.tile_size // 4)
+        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
+        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 4)
 
         # Calculate max movement in all directions
         self.max_move_left = 0  # The left edge of the map
@@ -134,15 +136,15 @@ class Game:
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
-            #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.tile_size))
+            #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         else:
-            #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.tile_size))
+            #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
-            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.tile_size))
+            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size))
         else:
-            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.tile_size))
+            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size))
 
     def run(self):
         while self.running:
@@ -158,7 +160,7 @@ class Game:
                 return "game_lost"
 
             if self.in_menu:
-                
+
                 response = self.game_menue.wait_for_response(self.game_stats)
                 if response == "exit":
                     self.running = False
@@ -178,12 +180,12 @@ class Game:
             self.mouse_adjusted_x = self.mouse_x - self.camera_x
             self.mouse_adjusted_y = self.mouse_y - self.camera_y
             #print("mouse_adjusted_x:",self.mouse_adjusted_x, "mouse_adjusted_y:", self.mouse_adjusted_y)
-            
+
             # calculate the grid position on the map the mouse is currently pointing at
             #screen_to_iso(mouse_x, mouse_y, tile_size, screen_width, screen_height, camera_x, camera_y)
-            self.mouse_map_position_x, self.mouse_map_position_y = screen_to_iso(self.mouse_adjusted_x, self.mouse_adjusted_y, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
-            #self.mouse_map_position_x = self.mouse_adjusted_x // self.tile_size
-            #self.mouse_map_position_y = self.mouse_adjusted_y // self.tile_size
+            self.mouse_map_position_x, self.mouse_map_position_y = screen_to_iso(self.mouse_adjusted_x, self.mouse_adjusted_y, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+            #self.mouse_map_position_x = self.mouse_adjusted_x // self.texture_size
+            #self.mouse_map_position_y = self.mouse_adjusted_y // self.texture_size
             #print("mouse_map_position_x:", self.mouse_map_position_x, "mouse_map_position_y:", self.mouse_map_position_y)
 
             # scroll right
@@ -196,7 +198,7 @@ class Game:
                         self.camera_x -= move
                     else:
                         self.camera_x -= self.scroll_speed
-            
+
             # scroll left
             if self.mouse_x <= self.game_screen_width * self.margin:
                 if self.camera_x < 0:
@@ -207,7 +209,7 @@ class Game:
                         self.camera_x += move
                     else:
                         self.camera_x += self.scroll_speed
-            
+
             # scroll up
             if self.mouse_y <= self.game_screen_height * self.margin:
                 if self.camera_y < 0:
@@ -219,7 +221,7 @@ class Game:
                         self.camera_y += move
                     else:
                         self.camera_y += self.scroll_speed
-            
+
             # scroll down
             if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
                 if self.camera_y > -(self.max_move_up_down):
@@ -244,31 +246,31 @@ class Game:
                 self.x_velocity = -self.x_velocity  # Reverse horizontal direction
             if self.y_pos >= self.screen.get_height() - 20 or self.y_pos <= 20:
                 self.y_velocity = -self.y_velocity  # Reverse vertical direction"""
-                
+
             # Loop over the grid and draw tiles
             #TODO: should only draw tiles that are visible in the camera viewport and maybe one more tile!
             for row in range(self.map_tiles_height):
                 for col in range(self.map_tiles_width):
                     tile_type = self.map.tile_grid[row][col]
                     if tile_type != 0:
-                        x = col * self.tile_size + self.camera_x
-                        y = row * self.tile_size + self.camera_y
-                        iso_x, iso_y = cart_to_iso(col, row, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                        x = col * self.texture_size + self.camera_x
+                        y = row * self.texture_size + self.camera_y
+                        iso_x, iso_y = cart_to_iso(col, row, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
                         self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
                     else:
-                        x = col * self.tile_size + self.camera_x
-                        y = row * self.tile_size + self.camera_y
-                        iso_x, iso_y = cart_to_iso(col, row, self.tile_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
-                        tile_rect = pygame.Rect(iso_x, iso_y, self.tile_size, self.tile_size)
+                        x = col * self.texture_size + self.camera_x
+                        y = row * self.texture_size + self.camera_y
+                        iso_x, iso_y = cart_to_iso(col, row, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                        tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
                         pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
                         pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
 
             # when object is selected
             if self.object_selected:
-                
+
                 # highlight the selected object
-                rect = pygame.Rect((self.selected_object_map_position_x * self.tile_size) + self.camera_x, (self.selected_object_map_position_y * self.tile_size) + self.camera_y, self.tile_size, self.tile_size)
-                pygame.draw.rect(self.screen, (0, 255, 0), rect, 5) 
+                rect = pygame.Rect((self.selected_object_map_position_x * self.texture_size) + self.camera_x, (self.selected_object_map_position_y * self.texture_size) + self.camera_y, self.texture_size, self.texture_size)
+                pygame.draw.rect(self.screen, (0, 255, 0), rect, 5)
 
                 # print detail view
                 pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, self.game_screen_height-self.detail_view_height, self.detail_view_width, self.detail_view_height))
@@ -319,13 +321,13 @@ class Game:
                         self.camera_x -= move
                     else:
                         self.camera_x -= self.scroll_speed
-                    
+
 
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.in_menu = True
-                    
+
                 # perform some action based on which tile is currently pointed at by the mouse
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     #print("map width:",self.map.get_map_tiles_width(), "map height:",self.map.get_map_tiles_height())
@@ -393,7 +395,7 @@ class Game:
                     return "menu"
                 else:
                     self.paused = False  # Unpause after returning from pause menu
-            
+
             # Check if 10 seconds have passed
             current_time = pygame.time.get_ticks()
             if current_time - self.last_update_time >= self.update_interval:
@@ -408,5 +410,3 @@ class Game:
     def toggle_pause(self):
         """Toggles pause state."""
         self.paused = not self.paused
-
-  
