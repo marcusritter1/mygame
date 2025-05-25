@@ -19,7 +19,7 @@ class GameSettings():
             with open(self.game_settings_save_file_path, 'r') as json_file:
                 data = json.load(json_file)
                 texture_dimesions = data.get("game_settings", {}).get("texture_size", None)
-                self.texture_size = (texture_dimesions["height"], texture_dimesions["width"])
+                self.texture_size = (texture_dimesions["width"], texture_dimesions["height"])
         except Exception as e:
             print(f"Error reading the file: {e}")
             self.texture_size = (32, 32)

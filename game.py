@@ -2,7 +2,7 @@ import pygame
 from pause import PauseMenu
 from ingame_menu import InGameMenu
 from map import Map
-from util import split_evenly, cart_to_iso, screen_to_iso
+from util import split_evenly, cart_to_iso, screen_to_iso, calculate_map_padding
 import numpy as np
 from game_stats import GameStats
 from game_settings import GameSettings
@@ -31,6 +31,7 @@ class Game:
         self.water_texture = pygame.image.load("assets/tileset/tiles/tile_104.png").convert_alpha()
         self.grass_texture = pygame.image.load("assets/tileset/tiles/tile_022.png").convert_alpha()
         self.house_texture = pygame.image.load("assets/tileset/tiles/tile_044.png").convert_alpha()
+        self.out_of_map_texture = pygame.image.load("assets/tileset/tiles/tile_092.png").convert_alpha()
 
         #DEBUG
         #print(self.water_texture.get_width(), self.water_texture.get_height())
@@ -68,6 +69,10 @@ class Game:
         self.y_velocity = 3  # Vertical speed of the animation"""
 
         self.texture_size = self.game_settings.texture_size[0]
+        self.texture_width = self.game_settings.texture_size[0]
+        self.texture_height = self.game_settings.texture_size[1]
+
+        self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
 
         # Compute the total isometric map size
         self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
@@ -142,9 +147,9 @@ class Game:
             #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
-            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size))
+            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size / 2))
         else:
-            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size))
+            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
 
     def run(self):
         while self.running:
@@ -249,7 +254,7 @@ class Game:
 
             # Loop over the grid and draw tiles
             #TODO: should only draw tiles that are visible in the camera viewport and maybe one more tile!
-            for row in range(self.map_tiles_height):
+            """for row in range(self.map_tiles_height):
                 for col in range(self.map_tiles_width):
                     tile_type = self.map.tile_grid[row][col]
                     if tile_type != 0:
@@ -263,7 +268,37 @@ class Game:
                         iso_x, iso_y = cart_to_iso(col, row, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
                         tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
                         pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
-                        pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
+                        pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline"""
+
+            # Extended loop to go beyond map boundaries
+            for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
+                for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
+
+                    # Is this tile inside the actual map?
+                    inside_map = (0 <= row < self.map_tiles_height) and (0 <= col < self.map_tiles_width)
+
+                    # Convert to isometric coordinates
+                    iso_x, iso_y = cart_to_iso(
+                        col, row,
+                        self.texture_size,
+                        self.game_screen_width,
+                        self.game_screen_height,
+                        self.camera_x,
+                        self.camera_y
+                    )
+
+                    if inside_map:
+                        tile_type = self.map.tile_grid[row][col]
+
+                        if tile_type != 0:
+                            self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
+                        else:
+                            tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
+                            pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
+                            pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
+                    else:
+                        # Draw background texture for out-of-bounds tiles
+                        self.screen.blit(self.out_of_map_texture, (iso_x, iso_y))
 
             # when object is selected
             if self.object_selected:
@@ -278,7 +313,10 @@ class Game:
                 self.screen.blit(text_surface, (15, self.game_screen_height-self.detail_view_height+15))
 
             # print a bar in the top of the game showing the game stats
-            pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, 0, self.game_screen_width, self.game_stats_bar_height))
+            s = pygame.Surface((self.game_screen_width, self.game_stats_bar_height), pygame.SRCALPHA)
+            s.fill((*self.LIGHT_GRAY, 128))  # LIGHT_GRAY is (R, G, B)
+            self.screen.blit(s, (0, 0))
+            #pygame.draw.rect(self.screen, self.LIGHT_GRAY, (0, 0, self.game_screen_width, self.game_stats_bar_height))
             text_surface = self.font.render("Gold: "+str(self.game_stats.gold), True, self.BLACK)
             self.screen.blit(text_surface, (15, 10))
 
@@ -403,6 +441,12 @@ class Game:
                 gold_increase = num_houses * 5
                 self.game_stats.gold += gold_increase  # Increase gold resource stat
                 self.last_update_time = current_time  # Reset timer
+
+            # DEBUG PRINTOUT only
+            #print("Camera X,Y:", self.camera_x, self.camera_y)
+            #print("Mouse X,Y:", self.mouse_x, self.mouse_y)
+            #print("Mouse adjusted X,Y:", self.mouse_adjusted_x, self.mouse_adjusted_y)
+            #print("Mouse map position X,Y:", self.mouse_map_position_x, self.mouse_map_position_y)
 
             pygame.display.flip()
             self.clock.tick(60)  # Limit to 60 FPS

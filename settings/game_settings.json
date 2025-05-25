@@ -8,8 +8,8 @@
     },
     "game_settings": {
         "texture_size": {
-          "height": 32,
-          "width": 32
+          "width": 32,
+          "height": 32
         }
     }
 }
