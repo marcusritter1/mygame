@@ -1,11 +1,11 @@
 # Python Game
 
-The python modules required to run the game are all inside the virtualenv `game/` folder.
+The game can be run using **uv** package manager. Use the following commands to run the game:
 
-Activate virtualenv with `.\game\Scripts\activate` in Windows.
-
-Run the game via `python main.py`.
+```
+uv venv gameenv
+uv sync
+uv run python main.py
+```
 
 Scale texture images: `ffmpeg -i grass.png -vf scale=50:50 grass_scaled.png`.
-
-Install required packages from requirements file `pip install -r requirements.txt`.
