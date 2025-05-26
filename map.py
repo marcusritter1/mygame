@@ -5,9 +5,14 @@ class Map():
 
     def __init__(self):
         #self.map_save_file_path = "saved_maps/saved_map_1.json"
-        self.map_save_file_path = "saved_maps/saved_map_2.json"
+        #self.map_save_file_path = "saved_maps/saved_map_2.json"
         #self.map_save_file_path = "saved_maps/saved_map_3.json"
-        #self.map_save_file_path = "saved_maps/quadratic_island.json"
+        #self.map_save_file_path = "saved_maps/saved_map_4.json"
+        #self.map_save_file_path = "saved_maps/saved_map_5.json"
+        #self.map_save_file_path = "saved_maps/saved_map_6.json"
+        #self.map_save_file_path = "saved_maps/saved_map_7.json"
+        #self.map_save_file_path = "saved_maps/saved_map_8.json"
+        self.map_save_file_path = "saved_maps/quadratic_island.json"
         self.tile_grid = None
         self.num_houses = 0
 

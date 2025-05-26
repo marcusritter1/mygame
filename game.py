@@ -176,9 +176,24 @@ class Game:
         self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
         #self.map_padding = 10
 
+        if self.map_tiles_height == self.map_tiles_width:
+            offset_x = 0
+            offset_y = 0
+        else:
+            offset_x = (self.map_tiles_width - self.map_tiles_height) / 2
+            offset_y = 0.05 * self.map_tiles_width + 0.0556 * self.map_tiles_height - 0.1176
+            offset_y = int(offset_y * 10) / 10.0
+            #offset_y = 1.6
+
+
+        print("DEBUG offset_x:", offset_x)
+        print("DEBUG offset_y:", offset_y)
+
         # Calculate the starting position of the camera
-        self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
-        self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 4) + (self.texture_size // 2)
+        #self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
+        self.camera_x = (self.game_screen_width / 2) - (self.iso_map_width / 2) - (offset_x*self.texture_size // 2)
+        print("DEBUG camera X:", self.camera_x)
+        self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 4) + (self.texture_size // 2) + (offset_y*self.texture_size)
 
     def run(self):
         while self.running:
