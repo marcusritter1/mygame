@@ -15,9 +15,18 @@ def split_evenly(x: int) -> tuple[int, int]:
     b = x - a
     return a, b
 
-def cart_to_iso(x, y, tile_size, screen_width, screen_height, camera_x, camera_y):
-    iso_x = (x - y) * (tile_size // 2) + camera_x + screen_width - (tile_size // 2) #// 2
-    iso_y = (x + y) * (tile_size // 4) + camera_y - (tile_size // 4) # + screen_height // 4
+def cart_to_iso(x, y, tile_size, screen_width, screen_height, camera_x, camera_y, iso_map_width, iso_map_height, map_width_smaller_than_screen, map_height_smaller_than_screen):
+
+    if map_width_smaller_than_screen is True:
+        iso_x = (x - y) * (tile_size // 2) + camera_x + (iso_map_width // 2) - (tile_size // 2) #// 2
+    else:
+        iso_x = (x - y) * (tile_size // 2) + camera_x + screen_width - (tile_size // 2) #// 2
+
+    if map_height_smaller_than_screen is True:
+        iso_y = (x + y) * (tile_size // 4) + camera_y - (iso_map_width // 4) - (tile_size // 4) # + screen_height // 4
+    else:
+        iso_y = (x + y) * (tile_size // 4) + camera_y - (tile_size // 4) # + screen_height // 4
+
     return iso_x, iso_y
 
 def screen_to_iso(mouse_x, mouse_y, tile_size, screen_width, screen_height, camera_x, camera_y):

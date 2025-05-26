@@ -40,6 +40,9 @@ class Game:
         self.map_tiles_width = self.map.get_map_tiles_width()
         self.map_tiles_height = self.map.get_map_tiles_height()
 
+        print("map_tiles_width:", self.map_tiles_width)
+        print("map_tiles_height:", self.map_tiles_height)
+
         self.scroll_speed = 4
         self.margin = 0.1    # margin in % for scroll area to screen border
 
@@ -72,12 +75,6 @@ class Game:
         self.texture_width = self.game_settings.texture_size[0]
         self.texture_height = self.game_settings.texture_size[1]
 
-        self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
-
-        # Compute the total isometric map size
-        self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
-        self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 4)
-
         #TODO: DEBUG
         # Initialize camera position to center the map
         #self.camera_x = self.iso_map_width // 2 - self.game_screen_width // 2
@@ -92,7 +89,7 @@ class Game:
             self.max_tiles_fit_screen_height += 1
 
         # if the map is smaller than the amount of tiles required to fill the game screen extend the map by padding it with empty tiles
-        if self.map_tiles_width < self.max_tiles_fit_screen_width:
+        """if self.map_tiles_width < self.max_tiles_fit_screen_width:
             missing_tiles_width = self.max_tiles_fit_screen_width - self.map_tiles_width
             missing_tiles_left, missing_tiles_right = split_evenly(missing_tiles_width)
             self.map.tile_grid = np.pad(self.map.tile_grid, pad_width=((0, 0), (missing_tiles_left, missing_tiles_right)), mode='constant', constant_values=0)
@@ -103,7 +100,7 @@ class Game:
             top_padding = np.zeros((missing_tiles_top, self.map.tile_grid.shape[1]), dtype=int)
             bottom_padding = np.zeros((missing_tiles_bottom, self.map.tile_grid.shape[1]), dtype=int)
             self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
-            self.map_tiles_height = self.map.get_map_tiles_height()
+            self.map_tiles_height = self.map.get_map_tiles_height()"""
 
         self.detail_view_width = 200
         self.detail_view_height = 100
@@ -133,23 +130,55 @@ class Game:
         self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
         self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 4)
 
-        # Calculate max movement in all directions
-        self.max_move_left = 0  # The left edge of the map
-        self.max_move_right = self.iso_map_width - self.game_screen_width  # Right boundary
-        self.max_move_up = 0  # The top edge of the map
-        self.max_move_down = self.iso_map_height - self.game_screen_height  # Bottom boundary
+        #iso_origin_x = map_height * (tile_width // 2)
+        #iso_origin_y = 0
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
+            self.map_width_smaller_than_screen = True
             #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         else:
+            self.map_width_smaller_than_screen = False
             #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
+
+        # check whether the map is smaller than the screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
-            self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size / 2))
+            self.map_height_smaller_than_screen = True
+            print("MAP IS SMALLER THAN SCREEN!")
+            #self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size / 2))
+            self.max_move_up_down = -self.game_screen_height
         else:
+            self.map_height_smaller_than_screen = False
+            print("MAP IS BIGGER THAN SCREEN!")
             self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
+
+        """if self.map_width_smaller_than_screen is True:
+            # Calculate max movement left and right
+            self.max_move_left = 0  # The left edge of the map
+            self.max_move_right = 0  # Right boundary
+        else:
+            # Calculate max movement left and right
+            self.max_move_left = 0  # The left edge of the map
+            self.max_move_right = self.iso_map_width - self.game_screen_width  # Right boundary
+
+        if self.map_height_smaller_than_screen is True:
+            # Calculate max movement up and down
+            self.max_move_up = 0  # The top edge of the map
+            self.max_move_down = -self.game_screen_height  # Bottom boundary
+        else:
+            # Calculate max movement up and down
+            self.max_move_up = 0  # The top edge of the map
+            self.max_move_down = self.iso_map_height - self.game_screen_height  # Bottom boundary"""
+
+        # calculate the amount of padding needed so that there is no black screen shown in the game window
+        self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
+        #self.map_padding = 10
+
+        # Calculate the starting position of the camera
+        self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
+        self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 4) + (self.texture_size // 2)
 
     def run(self):
         while self.running:
@@ -252,24 +281,6 @@ class Game:
             if self.y_pos >= self.screen.get_height() - 20 or self.y_pos <= 20:
                 self.y_velocity = -self.y_velocity  # Reverse vertical direction"""
 
-            # Loop over the grid and draw tiles
-            #TODO: should only draw tiles that are visible in the camera viewport and maybe one more tile!
-            """for row in range(self.map_tiles_height):
-                for col in range(self.map_tiles_width):
-                    tile_type = self.map.tile_grid[row][col]
-                    if tile_type != 0:
-                        x = col * self.texture_size + self.camera_x
-                        y = row * self.texture_size + self.camera_y
-                        iso_x, iso_y = cart_to_iso(col, row, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
-                        self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
-                    else:
-                        x = col * self.texture_size + self.camera_x
-                        y = row * self.texture_size + self.camera_y
-                        iso_x, iso_y = cart_to_iso(col, row, self.texture_size, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
-                        tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
-                        pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
-                        pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline"""
-
             # Extended loop to go beyond map boundaries
             for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
                 for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
@@ -284,7 +295,11 @@ class Game:
                         self.game_screen_width,
                         self.game_screen_height,
                         self.camera_x,
-                        self.camera_y
+                        self.camera_y,
+                        self.iso_map_width,
+                        self.iso_map_height,
+                        self.map_width_smaller_than_screen,
+                        self.map_height_smaller_than_screen
                     )
 
                     if inside_map:
@@ -292,6 +307,7 @@ class Game:
 
                         if tile_type != 0:
                             self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
+                        # draw a placeholder in case the texture is missing
                         else:
                             tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
                             pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
@@ -447,6 +463,12 @@ class Game:
             #print("Mouse X,Y:", self.mouse_x, self.mouse_y)
             #print("Mouse adjusted X,Y:", self.mouse_adjusted_x, self.mouse_adjusted_y)
             #print("Mouse map position X,Y:", self.mouse_map_position_x, self.mouse_map_position_y)
+
+            # DEBUG: cord lines for help
+            WHITE = (255, 255, 255)
+            pygame.draw.line(self.screen, WHITE, (0, self.game_screen_height // 2), (self.game_screen_width, self.game_screen_height // 2), 1)
+            pygame.draw.line(self.screen, WHITE, (self.game_screen_width // 2, 0), (self.game_screen_width // 2, self.game_screen_height), 1)
+
 
             pygame.display.flip()
             self.clock.tick(60)  # Limit to 60 FPS

@@ -2,14 +2,14 @@
     "graphics_settings": {
         "window_mode": "WINDOWED",
         "resolution": [
-            800,
-            600
+            1280,
+            800
         ]
     },
     "game_settings": {
         "texture_size": {
-          "width": 32,
-          "height": 32
+            "width": 32,
+            "height": 32
         }
     }
 }
