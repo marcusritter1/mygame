@@ -75,11 +75,6 @@ class Game:
         self.texture_width = self.game_settings.texture_size[0]
         self.texture_height = self.game_settings.texture_size[1]
 
-        #TODO: DEBUG
-        # Initialize camera position to center the map
-        #self.camera_x = self.iso_map_width // 2 - self.game_screen_width // 2
-        #self.camera_y = self.iso_map_height // 2 - self.game_screen_height // 2
-
         # calculate max tiles width and height that will fit on the game screen
         self.max_tiles_fit_screen_width = game_resolution[0] // self.texture_size
         if (game_resolution[0] / self.texture_size) > self.max_tiles_fit_screen_width:
@@ -135,13 +130,17 @@ class Game:
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
+            print("MAP IS SMALLER THAN SCREEN!")
             self.map_width_smaller_than_screen = True
             #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         else:
             self.map_width_smaller_than_screen = False
+            print("MAP IS BIGGER THAN SCREEN!")
             #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.texture_size))
-            self.max_move_left_right = self.iso_map_width - self.game_screen_width
+            self.max_move_left_right = (self.iso_map_width - self.game_screen_width) // 2
+
+        print("DEBUG self.max_move_left_right:",self.max_move_left_right)
 
         # check whether the map is smaller than the screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
@@ -190,10 +189,24 @@ class Game:
         print("DEBUG offset_y:", offset_y)
 
         # Calculate the starting position of the camera
-        #self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
-        self.camera_x = (self.game_screen_width / 2) - (self.iso_map_width / 2) - (offset_x*self.texture_size // 2)
+
+        if self.map_width_smaller_than_screen is False:
+            #self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (offset_x*self.texture_size // 2)
+            self.camera_x = (self.game_screen_width // 2) - ((self.map_tiles_width - self.map_tiles_height) * (self.texture_size // 2)) // 2 - (self.texture_size // 2)
+        else:
+            #self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
+            self.camera_x = (self.game_screen_width / 2) - (self.iso_map_width / 2) - (offset_x*self.texture_size // 2)
         print("DEBUG camera X:", self.camera_x)
-        self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 4) + (self.texture_size // 2) + (offset_y*self.texture_size)
+
+        if self.map_height_smaller_than_screen is False:
+            self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 2) + (self.texture_size // 8) #+ (self.texture_size // 2) + (offset_y*self.texture_size)
+            self.camera_y -= (self.texture_size // 2)
+        else:
+            self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 4) + (self.texture_size // 2) + (offset_y*self.texture_size)
+
+        self.iso_map_center_x = self.camera_x
+        self.iso_map_center_y = self.camera_y
+
 
     def run(self):
         while self.running:
@@ -239,7 +252,8 @@ class Game:
 
             # scroll right
             if self.mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
-                if self.camera_x > -(self.max_move_left_right):
+                print("DEBUG ", self.camera_x, (self.iso_map_center_x+self.max_move_left_right))
+                if self.camera_x > (self.iso_map_center_x-self.max_move_left_right):
                     test_camera_x = self.camera_x - self.scroll_speed
                     if test_camera_x < -(self.max_move_left_right):
                         diff = abs(test_camera_x) - (self.max_move_left_right)
@@ -250,11 +264,16 @@ class Game:
 
             # scroll left
             if self.mouse_x <= self.game_screen_width * self.margin:
-                if self.camera_x < 0:
-                    test_camera_x = self.camera_x + self.scroll_speed
-                    if test_camera_x > 0:
-                        diff = 0 - abs(test_camera_x)
-                        move = self.scroll_speed + diff
+                print("DEBUG ", self.camera_x, (self.iso_map_center_x + self.max_move_left_right))
+
+                # You can scroll left only if camera_x is less than right boundary
+                if self.camera_x < (self.iso_map_center_x + self.max_move_left_right):
+                    test_camera_x = self.camera_x + self.scroll_speed  # scroll left = increase camera_x
+
+                    # Clamp to not go past left edge (max allowed camera_x)
+                    if test_camera_x > (self.iso_map_center_x + self.max_move_left_right):
+                        diff = test_camera_x - (self.iso_map_center_x + self.max_move_left_right)
+                        move = self.scroll_speed - diff
                         self.camera_x += move
                     else:
                         self.camera_x += self.scroll_speed
