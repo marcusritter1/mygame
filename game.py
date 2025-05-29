@@ -43,8 +43,8 @@ class Game:
         self.map_tiles_width = self.map.get_map_tiles_width()
         self.map_tiles_height = self.map.get_map_tiles_height()
 
-        print("map_tiles_width:", self.map_tiles_width)
-        print("map_tiles_height:", self.map_tiles_height)
+        #print("map_tiles_width:", self.map_tiles_width)
+        #print("map_tiles_height:", self.map_tiles_height)
 
         self.scroll_speed = 4
         self.margin = 0.1    # margin in % for scroll area to screen border
@@ -124,31 +124,31 @@ class Game:
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
-            print("MAP IS SMALLER THAN SCREEN!")
+            #print("MAP IS SMALLER THAN SCREEN!")
             self.map_width_smaller_than_screen = True
             #self.max_move_left_right = abs(self.game_screen_width - (self.max_tiles_fit_screen_width * self.texture_size))
             self.max_move_left_right = self.iso_map_width - self.game_screen_width
         else:
             self.map_width_smaller_than_screen = False
-            print("MAP IS BIGGER THAN SCREEN!")
+            #print("MAP IS BIGGER THAN SCREEN!")
             #self.max_move_left_right = abs(self.game_screen_width - (self.map_tiles_width * self.texture_size))
             self.max_move_left_right = (self.iso_map_width - self.game_screen_width) // 2
 
-        print("DEBUG self.max_move_left_right:",self.max_move_left_right)
+        #print("DEBUG self.max_move_left_right:",self.max_move_left_right)
 
         # check whether the map is smaller than the screen_width
         if self.map_tiles_height < self.max_tiles_fit_screen_height:
             self.map_height_smaller_than_screen = True
-            print("MAP IS SMALLER THAN SCREEN!")
+            #print("MAP IS SMALLER THAN SCREEN!")
             #self.max_move_up_down = abs(self.game_screen_height - (self.max_tiles_fit_screen_height * self.texture_size / 2))
             self.max_move_up_down = -self.game_screen_height
         else:
             self.map_height_smaller_than_screen = False
             if self.iso_map_bottom < self.game_screen_height:
                 self.max_move_up_down = 0
-                print("that is true")
+                #print("that is true")
             else:
-                print("MAP IS BIGGER THAN SCREEN!")
+                #print("MAP IS BIGGER THAN SCREEN!")
                 self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
 
         # calculate the amount of padding needed so that there is no black screen shown in the game window
@@ -165,8 +165,8 @@ class Game:
             #offset_y = 1.6
 
 
-        print("DEBUG offset_x:", offset_x)
-        print("DEBUG offset_y:", offset_y)
+        #print("DEBUG offset_x:", offset_x)
+        #print("DEBUG offset_y:", offset_y)
 
         # Calculate the starting position of the camera
 
@@ -176,7 +176,7 @@ class Game:
         else:
             #self.camera_x = (self.game_screen_width // 2) - (self.iso_map_width // 2) #- (self.map_tiles_height*8) #(2*self.texture_size)
             self.camera_x = (self.game_screen_width / 2) - (self.iso_map_width / 2) - (offset_x*self.texture_size // 2)
-        print("DEBUG camera X:", self.camera_x)
+        #print("DEBUG camera X:", self.camera_x)
 
         if self.map_height_smaller_than_screen is False:
             self.camera_y = (self.game_screen_height // 2) - (self.iso_map_height // 2) + (self.texture_size // 8) #+ (self.texture_size // 2) + (offset_y*self.texture_size)
@@ -189,6 +189,9 @@ class Game:
 
 
     def run(self):
+
+        font = pygame.font.SysFont(None, 24)
+
         while self.running:
 
             # win condition
@@ -274,7 +277,7 @@ class Game:
             if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
                 if self.iso_map_bottom > self.game_screen_height:
                     self.max_move_up_down = 0
-                    print("DEBUG ", self.camera_y, -(self.max_move_up_down))
+                    #print("DEBUG ", self.camera_y, -(self.max_move_up_down))
                     if self.camera_y > -(self.max_move_up_down):
                         test_camera_y = self.camera_y - self.scroll_speed
                         if test_camera_y < -(self.max_move_up_down):
@@ -494,6 +497,10 @@ class Game:
                 pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_left, (self.game_screen_height // 2)), 3)
                 pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_right, (self.game_screen_height // 2)), 3)
 
+
+            fps = self.clock.get_fps()
+            fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
+            self.screen.blit(fps_text, (self.game_screen_width-100, 10))
 
             pygame.display.flip()
             self.clock.tick(60)  # Limit to 60 FPS

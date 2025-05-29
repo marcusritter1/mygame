@@ -2,14 +2,21 @@
 
 ## Ideas:
 
+* In full screen with large resolution in game I only get about 30 fps, how can I improve that?
+  * render only what is displayed / that can fit on screen
+  * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
+
+* add fps counter also to menues of the game
+  * the set frame rate of system should be read
+  * ideally I would cap the games fps rate to what is set on system level for in-game and the menus...
+
 * could generate the list of available maps and then put them as choices into the command line arguments for loading the map
 
 * could have input via xbox controller
 
-* calculate and display the amount of fps that I get
-
-* need to fix all of the calculations that don't work anymore now because of isometric view...
-  * (almost done)
+* make a map that is larger in width and height than screen - done
+  * test the movement around the map
+  * test initial camera positioning
 
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
@@ -45,6 +52,10 @@
 
 * multiplayer menu to connect or join to a game lobby
 * menu to create a new game lobby
+
+## Map Editor
+
+* one cool idea could be to build a separate map editor to build nice maps graphically with the tiles that I have fast...
 
 ## Game Engine
 
