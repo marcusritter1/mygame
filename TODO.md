@@ -2,6 +2,12 @@
 
 ## Ideas:
 
+* could generate the list of available maps and then put them as choices into the command line arguments for loading the map
+
+* could have input via xbox controller
+
+* calculate and display the amount of fps that I get
+
 * need to fix all of the calculations that don't work anymore now because of isometric view...
   * (almost done)
 

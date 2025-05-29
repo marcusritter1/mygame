@@ -10,7 +10,7 @@ from game_settings import GameSettings
 
 class Game:
 
-    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None):
+    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None, MAP_DEBUG: bool = False, MAP: str = ""):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -21,6 +21,9 @@ class Game:
             self.game_stats = GameStats(gold=500)
         else:
             self.game_stats = game_stats
+
+        self.MAP_DEBUG=MAP_DEBUG
+        self.MAP = MAP
 
         self.last_update_time = pygame.time.get_ticks()  # Get initial time
         self.update_interval = 10000  # 10 seconds in milliseconds
@@ -36,7 +39,7 @@ class Game:
         #DEBUG
         #print(self.water_texture.get_width(), self.water_texture.get_height())
 
-        self.map = Map()
+        self.map = Map(self.MAP)
         self.map_tiles_width = self.map.get_map_tiles_width()
         self.map_tiles_height = self.map.get_map_tiles_height()
 
@@ -83,20 +86,6 @@ class Game:
         if (game_resolution[1] / self.texture_size) > self.max_tiles_fit_screen_height:
             self.max_tiles_fit_screen_height += 1
 
-        # if the map is smaller than the amount of tiles required to fill the game screen extend the map by padding it with empty tiles
-        """if self.map_tiles_width < self.max_tiles_fit_screen_width:
-            missing_tiles_width = self.max_tiles_fit_screen_width - self.map_tiles_width
-            missing_tiles_left, missing_tiles_right = split_evenly(missing_tiles_width)
-            self.map.tile_grid = np.pad(self.map.tile_grid, pad_width=((0, 0), (missing_tiles_left, missing_tiles_right)), mode='constant', constant_values=0)
-            self.map_tiles_width = self.map.get_map_tiles_width()
-        if self.map_tiles_height < self.max_tiles_fit_screen_height:
-            missing_tiles_height = self.max_tiles_fit_screen_height - self.map_tiles_height
-            missing_tiles_bottom, missing_tiles_top = split_evenly(missing_tiles_height)
-            top_padding = np.zeros((missing_tiles_top, self.map.tile_grid.shape[1]), dtype=int)
-            bottom_padding = np.zeros((missing_tiles_bottom, self.map.tile_grid.shape[1]), dtype=int)
-            self.map.tile_grid = np.vstack((top_padding, self.map.tile_grid, bottom_padding))
-            self.map_tiles_height = self.map.get_map_tiles_height()"""
-
         self.detail_view_width = 200
         self.detail_view_height = 100
         self.detail_view_text = ""
@@ -125,8 +114,13 @@ class Game:
         self.iso_map_width = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 2)
         self.iso_map_height = (self.map_tiles_width + self.map_tiles_height) * (self.texture_size // 4)
 
-        #iso_origin_x = map_height * (tile_width // 2)
-        #iso_origin_y = 0
+        # calculate the top and bottom end points of them map in iso cords
+        self.iso_map_top = (self.game_screen_height // 2) - (self.iso_map_height // 2)
+        self.iso_map_bottom = (self.game_screen_height // 2) + (self.iso_map_height // 2)
+
+        # calculate the left and right end points of them map in iso cords
+        self.iso_map_left = (self.game_screen_width // 2) - (self.iso_map_width // 2)
+        self.iso_map_right = (self.game_screen_width // 2) + (self.iso_map_width // 2)
 
         # calculate the max amount of pixels the camera can be moved on x and y axis depending on the map size
         if self.map_tiles_width < self.max_tiles_fit_screen_width:
@@ -150,26 +144,12 @@ class Game:
             self.max_move_up_down = -self.game_screen_height
         else:
             self.map_height_smaller_than_screen = False
-            print("MAP IS BIGGER THAN SCREEN!")
-            self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
-
-        """if self.map_width_smaller_than_screen is True:
-            # Calculate max movement left and right
-            self.max_move_left = 0  # The left edge of the map
-            self.max_move_right = 0  # Right boundary
-        else:
-            # Calculate max movement left and right
-            self.max_move_left = 0  # The left edge of the map
-            self.max_move_right = self.iso_map_width - self.game_screen_width  # Right boundary
-
-        if self.map_height_smaller_than_screen is True:
-            # Calculate max movement up and down
-            self.max_move_up = 0  # The top edge of the map
-            self.max_move_down = -self.game_screen_height  # Bottom boundary
-        else:
-            # Calculate max movement up and down
-            self.max_move_up = 0  # The top edge of the map
-            self.max_move_down = self.iso_map_height - self.game_screen_height  # Bottom boundary"""
+            if self.iso_map_bottom < self.game_screen_height:
+                self.max_move_up_down = 0
+                print("that is true")
+            else:
+                print("MAP IS BIGGER THAN SCREEN!")
+                self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
 
         # calculate the amount of padding needed so that there is no black screen shown in the game window
         self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
@@ -252,7 +232,7 @@ class Game:
 
             # scroll right
             if self.mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
-                print("DEBUG ", self.camera_x, (self.iso_map_center_x+self.max_move_left_right))
+                #print("DEBUG ", self.camera_x, (self.iso_map_center_x+self.max_move_left_right))
                 if self.camera_x > (self.iso_map_center_x-self.max_move_left_right):
                     test_camera_x = self.camera_x - self.scroll_speed
                     if test_camera_x < -(self.max_move_left_right):
@@ -264,7 +244,7 @@ class Game:
 
             # scroll left
             if self.mouse_x <= self.game_screen_width * self.margin:
-                print("DEBUG ", self.camera_x, (self.iso_map_center_x + self.max_move_left_right))
+                #print("DEBUG ", self.camera_x, (self.iso_map_center_x + self.max_move_left_right))
 
                 # You can scroll left only if camera_x is less than right boundary
                 if self.camera_x < (self.iso_map_center_x + self.max_move_left_right):
@@ -292,14 +272,17 @@ class Game:
 
             # scroll down
             if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
-                if self.camera_y > -(self.max_move_up_down):
-                    test_camera_y = self.camera_y - self.scroll_speed
-                    if test_camera_y < -(self.max_move_up_down):
-                        diff = abs(test_camera_y) - (self.max_move_up_down)
-                        move = self.scroll_speed - diff
-                        self.camera_y -= move
-                    else:
-                        self.camera_y -= self.scroll_speed
+                if self.iso_map_bottom > self.game_screen_height:
+                    self.max_move_up_down = 0
+                    print("DEBUG ", self.camera_y, -(self.max_move_up_down))
+                    if self.camera_y > -(self.max_move_up_down):
+                        test_camera_y = self.camera_y - self.scroll_speed
+                        if test_camera_y < -(self.max_move_up_down):
+                            diff = abs(test_camera_y) - (self.max_move_up_down)
+                            move = self.scroll_speed - diff
+                            self.camera_y -= move
+                        else:
+                            self.camera_y -= self.scroll_speed
 
 
             """# Create a simple animated object (moving circle)
@@ -498,10 +481,18 @@ class Game:
             #print("Mouse adjusted X,Y:", self.mouse_adjusted_x, self.mouse_adjusted_y)
             #print("Mouse map position X,Y:", self.mouse_map_position_x, self.mouse_map_position_y)
 
-            # DEBUG: cord lines for help
-            WHITE = (255, 255, 255)
-            pygame.draw.line(self.screen, WHITE, (0, self.game_screen_height // 2), (self.game_screen_width, self.game_screen_height // 2), 1)
-            pygame.draw.line(self.screen, WHITE, (self.game_screen_width // 2, 0), (self.game_screen_width // 2, self.game_screen_height), 1)
+            if self.MAP_DEBUG:
+
+                # DEBUG: cord lines for help
+                WHITE = (255, 255, 255)
+                pygame.draw.line(self.screen, WHITE, (0, self.game_screen_height // 2), (self.game_screen_width, self.game_screen_height // 2), 1)
+                pygame.draw.line(self.screen, WHITE, (self.game_screen_width // 2, 0), (self.game_screen_width // 2, self.game_screen_height), 1)
+
+                # DEBUG: map corner marking for help
+                pygame.draw.circle(self.screen, (255, 0, 0), ((self.game_screen_width // 2), self.iso_map_top), 3)
+                pygame.draw.circle(self.screen, (255, 0, 0), ((self.game_screen_width // 2), self.iso_map_bottom), 3)
+                pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_left, (self.game_screen_height // 2)), 3)
+                pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_right, (self.game_screen_height // 2)), 3)
 
 
             pygame.display.flip()

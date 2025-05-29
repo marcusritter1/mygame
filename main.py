@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import argparse
 
 from menu import Menu
 from game import Game
@@ -12,6 +13,19 @@ from win_screen import WinScreen
 from lost_screen import LostScreen
 
 def main():
+
+    parser = argparse.ArgumentParser(description="My Isometric Game")
+    parser.add_argument("--mapdebug", action="store_true", help="Enable debug visualizations for map.")
+    parser.add_argument("--map", type=str, default="", help="Load the game with a specific map, e.g., 'quadratic_island'.")
+    args = parser.parse_args()
+
+    MAP_DEBUG = False
+    MAP = ""
+
+    if args.mapdebug:
+        MAP_DEBUG = True
+    if args.map:
+        MAP = args.map
 
     game_name = "MyGame"
     game_settings = GameSettings()
@@ -64,14 +78,14 @@ def main():
                 action = menu.handle_event(event)
                 if action == "start":
                     in_menu = False
-                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=True)
+                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=True, MAP_DEBUG=MAP_DEBUG, MAP=MAP)
                 elif action == "settings":
                     in_menu = False
                     in_settings = True
                 elif action == "load":
                     in_menu = False
                     loaded_save = load_savegame()
-                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=False, game_stats=loaded_save.game_stats)
+                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=False, game_stats=loaded_save.game_stats, MAP_DEBUG=MAP_DEBUG, MAP=MAP)
                 elif action == "exit":  # Directly quit, no popup
                     in_menu = False
                     running = False
