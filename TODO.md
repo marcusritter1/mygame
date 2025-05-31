@@ -6,6 +6,8 @@
   * render only what is displayed / that can fit on screen
   * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
 
+* fix WASD movement code - should be same logic as for mouse without near screen border detection...
+
 * could have input via xbox controller
 
 * how to put background audio for menu
@@ -36,7 +38,11 @@
   * It looks like it is very difficult to extract its textures as they are in the binaries of the game.
   * I could draw base layer of the map that is basically never changed by player as one big image, that would reduce rendering effort a lot. Other layers an animation can be drawn on top of that. This background image also needs only be updated very rarely most likely...
 * tiles in class objects and load in game class
-* zoom in and out of map?
+
+* zoom in and out of map - done
+  * basic zoom is working but drops fps like crazy.
+  * how to get high gps with zoom?
+
 * how to rotate map and textures?
 
 ## Multiplayer:

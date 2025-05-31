@@ -62,8 +62,8 @@ class Settings:
         if self.FPS_COUNTER:
             font = pygame.font.SysFont(None, 24)
             fps = self.clock.get_fps()
-            fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
-            self.screen.blit(fps_text, (self.game_screen_width-100, 10))
+            fps_text = font.render(f"FPS: {fps:.1f}/{self.REFRESH_RATE}", True, (255, 255, 255))
+            self.screen.blit(fps_text, (self.game_screen_width-120, 10))
 
         pygame.display.flip()
         self.clock.tick(self.REFRESH_RATE)  # Limit the FPS to set system refresh rate

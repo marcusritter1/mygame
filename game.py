@@ -76,9 +76,10 @@ class Game:
         self.x_velocity = 5  # Speed of the animation (movement per frame)
         self.y_velocity = 3  # Vertical speed of the animation"""
 
-        self.texture_size = self.game_settings.texture_size[0]
-        self.texture_width = self.game_settings.texture_size[0]
-        self.texture_height = self.game_settings.texture_size[1]
+        self.zoom = 1.0
+        self.texture_size = int(self.game_settings.texture_size[0] * self.zoom)
+        self.texture_width = int(self.game_settings.texture_size[0] * self.zoom)
+        self.texture_height = int(self.game_settings.texture_size[1] * self.zoom)
 
         # calculate max tiles width and height that will fit on the game screen
         self.max_tiles_fit_screen_width = game_resolution[0] // self.texture_size
@@ -317,14 +318,18 @@ class Game:
                         self.iso_map_width,
                         self.iso_map_height,
                         self.map_width_smaller_than_screen,
-                        self.map_height_smaller_than_screen
+                        self.map_height_smaller_than_screen,
+                        self.zoom
                     )
 
                     if inside_map:
                         tile_type = self.map.tile_grid[row][col]
 
                         if tile_type != 0:
-                            self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
+                            text = self.tile_textures.get(tile_type, self.BLACK)
+                            scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                            #self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
+                            self.screen.blit(scaled_text, (iso_x, iso_y))
                         # draw a placeholder in case the texture is missing
                         else:
                             tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
@@ -332,7 +337,9 @@ class Game:
                             pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
                     else:
                         # Draw background texture for out-of-bounds tiles
-                        self.screen.blit(self.out_of_map_texture, (iso_x, iso_y))
+                        text = self.out_of_map_texture
+                        scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                        self.screen.blit(scaled_text, (iso_x, iso_y))
 
             # when object is selected
             if self.object_selected:
@@ -394,6 +401,17 @@ class Game:
                     else:
                         self.camera_x -= self.scroll_speed
 
+            if keys[pygame.K_PLUS]:
+                print("Zoom in.")
+                if self.zoom < 2.0:
+                    self.zoom += 0.1
+                print("zoom:", self.zoom)
+
+            if keys[pygame.K_MINUS]:
+                print("Zoom out.")
+                if self.zoom > 1.0:
+                    self.zoom -= 0.1
+                print("zoom:", self.zoom)
 
             # Handle events
             for event in pygame.event.get():
@@ -461,7 +479,7 @@ class Game:
 
             # Show the pause menu if the game is paused
             if self.paused:
-                pause_menu = PauseMenu(self.screen, self.game_screen_width, self.game_screen_height)
+                pause_menu = PauseMenu(self.screen, self.game_screen_width, self.game_screen_height, self.FPS_COUNTER, self.REFRESH_RATE)
                 response = pause_menu.run()  # Pause menu blocks until resumed
                 if response == "exit":
                     return "menu"
@@ -498,8 +516,8 @@ class Game:
             if self.FPS_COUNTER:
                 font = pygame.font.SysFont(None, 24)
                 fps = self.clock.get_fps()
-                fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
-                self.screen.blit(fps_text, (self.game_screen_width-100, 10))
+                fps_text = font.render(f"FPS: {fps:.1f}/{self.REFRESH_RATE}", True, (255, 255, 255))
+                self.screen.blit(fps_text, (self.game_screen_width-120, 10))
 
             pygame.display.flip()
             self.clock.tick(self.REFRESH_RATE)  # Limit FPS to system set refresh rate
