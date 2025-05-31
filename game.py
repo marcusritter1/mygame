@@ -10,7 +10,7 @@ from game_settings import GameSettings
 
 class Game:
 
-    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None, MAP_DEBUG: bool = False, MAP: str = ""):
+    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None, MAP_DEBUG: bool = False, MAP: str = "", FPS_COUNTER: bool = False):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -24,6 +24,7 @@ class Game:
 
         self.MAP_DEBUG=MAP_DEBUG
         self.MAP = MAP
+        self.FPS_COUNTER = FPS_COUNTER
 
         self.last_update_time = pygame.time.get_ticks()  # Get initial time
         self.update_interval = 10000  # 10 seconds in milliseconds
@@ -189,8 +190,6 @@ class Game:
 
 
     def run(self):
-
-        font = pygame.font.SysFont(None, 24)
 
         while self.running:
 
@@ -497,10 +496,11 @@ class Game:
                 pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_left, (self.game_screen_height // 2)), 3)
                 pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_right, (self.game_screen_height // 2)), 3)
 
-
-            fps = self.clock.get_fps()
-            fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
-            self.screen.blit(fps_text, (self.game_screen_width-100, 10))
+            if self.FPS_COUNTER:
+                font = pygame.font.SysFont(None, 24)
+                fps = self.clock.get_fps()
+                fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
+                self.screen.blit(fps_text, (self.game_screen_width-100, 10))
 
             pygame.display.flip()
             self.clock.tick(60)  # Limit to 60 FPS

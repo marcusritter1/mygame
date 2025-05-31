@@ -4,9 +4,13 @@ import pygame_gui
 from game_enums import WindowMode
 
 class Settings:
-    def __init__(self, screen, WIDTH, HEIGHT, resolutions_list, game_settings):
+    def __init__(self, screen, WIDTH, HEIGHT, resolutions_list, game_settings, FPS_COUNTER):
         self.screen = screen
         self.manager = pygame_gui.UIManager((WIDTH, HEIGHT))
+        self.game_screen_width = WIDTH
+        self.game_screen_height = HEIGHT
+        self.FPS_COUNTER = FPS_COUNTER
+        self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 50)
         self.game_settings = game_settings
         self.game_resolution = self.game_settings.resolution
@@ -54,7 +58,14 @@ class Settings:
         # Draw the UI elements (Dropdown and Buttons)
         self.manager.draw_ui(self.screen)
 
+        if self.FPS_COUNTER:
+            font = pygame.font.SysFont(None, 24)
+            fps = self.clock.get_fps()
+            fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
+            self.screen.blit(fps_text, (self.game_screen_width-100, 10))
+
         pygame.display.flip()
+        self.clock.tick(60)  # Limit to 60 FPS
 
     def handle_event(self, event):
         """Handle keyboard input for settings screen"""

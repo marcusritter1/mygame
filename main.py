@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 import argparse
+import Quartz
 
 from menu import Menu
 from game import Game
@@ -17,15 +18,21 @@ def main():
     parser = argparse.ArgumentParser(description="My Isometric Game")
     parser.add_argument("--mapdebug", action="store_true", help="Enable debug visualizations for map.")
     parser.add_argument("--map", type=str, default="", help="Load the game with a specific map, e.g., 'quadratic_island'.")
+    parser.add_argument("--fpscounter", action="store_true", help="Enable the FPS counter.")
     args = parser.parse_args()
 
     MAP_DEBUG = False
     MAP = ""
+    FPS_COUNTER = False
 
     if args.mapdebug:
         MAP_DEBUG = True
     if args.map:
         MAP = args.map
+    if args.fpscounter:
+        FPS_COUNTER = True
+
+    print(f"Refresh Rate: {get_refresh_rate()} Hz")
 
     game_name = "MyGame"
     game_settings = GameSettings()
@@ -53,8 +60,8 @@ def main():
     pygame.display.set_caption(game_name)
     manager = pygame_gui.UIManager((WIDTH, HEIGHT))
 
-    menu = Menu(screen, WIDTH, HEIGHT)
-    settings = Settings(screen, WIDTH, HEIGHT, resolutions_list, game_settings)
+    menu = Menu(screen, WIDTH, HEIGHT, FPS_COUNTER)
+    settings = Settings(screen, WIDTH, HEIGHT, resolutions_list, game_settings, FPS_COUNTER)
     win_screen = WinScreen(screen, WIDTH, HEIGHT)
     lost_screen = LostScreen(screen, WIDTH, HEIGHT)
 
@@ -78,14 +85,14 @@ def main():
                 action = menu.handle_event(event)
                 if action == "start":
                     in_menu = False
-                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=True, MAP_DEBUG=MAP_DEBUG, MAP=MAP)
+                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=True, MAP_DEBUG=MAP_DEBUG, MAP=MAP, FPS_COUNTER=FPS_COUNTER)
                 elif action == "settings":
                     in_menu = False
                     in_settings = True
                 elif action == "load":
                     in_menu = False
                     loaded_save = load_savegame()
-                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=False, game_stats=loaded_save.game_stats, MAP_DEBUG=MAP_DEBUG, MAP=MAP)
+                    game = Game(screen=screen, game_resolution=game_resolution, game_settings=game_settings, new_game=False, game_stats=loaded_save.game_stats, MAP_DEBUG=MAP_DEBUG, MAP=MAP, FPS_COUNTER=FPS_COUNTER)
                 elif action == "exit":  # Directly quit, no popup
                     in_menu = False
                     running = False
@@ -146,6 +153,11 @@ def main():
                 in_menu = False
 
     pygame.quit()
+
+def get_refresh_rate():
+    main_display = Quartz.CGMainDisplayID()
+    mode = Quartz.CGDisplayCopyDisplayMode(main_display)
+    return Quartz.CGDisplayModeGetRefreshRate(mode)
 
 if __name__ == "__main__":
     main()

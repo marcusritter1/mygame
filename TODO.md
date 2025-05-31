@@ -6,9 +6,8 @@
   * render only what is displayed / that can fit on screen
   * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
 
-* add fps counter also to menues of the game
-  * the set frame rate of system should be read
-  * ideally I would cap the games fps rate to what is set on system level for in-game and the menus...
+* the set frame rate of system should be read
+* ideally I would cap the games fps rate to what is set on system level for in-game and the menus...
 
 * could generate the list of available maps and then put them as choices into the command line arguments for loading the map
 
@@ -37,6 +36,7 @@
 * have a in game stats window that show per minuete stats of game, e.g., gold income positive or negative atm...
 * Have a menu for saving a game, where one can write savegame name and save it or even override existing savegame
 * similar menu for loading save game where you can see all existing save games by date, time, and name, select one and load it, maybe even delete one...
+* if the set game screen resolution does not exist in system then the game crashes when clicking on game resolution selection
 
 ## Map related Questions:
 

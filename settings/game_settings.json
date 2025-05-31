@@ -2,8 +2,8 @@
     "graphics_settings": {
         "window_mode": "WINDOWED",
         "resolution": [
-            640,
-            480
+            1024,
+            640
         ]
     },
     "game_settings": {
