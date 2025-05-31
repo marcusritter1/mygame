@@ -4,6 +4,7 @@ import numpy as np
 class Map():
 
     def __init__(self, MAP: str = ""):
+        self.maps_path = "saved_maps/"
         self.MAP = MAP
         if self.MAP != "":
             self.map_save_file_path = "saved_maps/"+self.MAP+".json"

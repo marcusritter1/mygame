@@ -7,7 +7,7 @@ from game import Game
 from settings import Settings
 from game_settings import GameSettings
 from game_enums import WindowMode
-from util import get_current_resolution, get_possible_resolutions, detect_system, TargetSystem, detect_refresh_rate
+from util import get_current_resolution, get_possible_resolutions, detect_system, TargetSystem, detect_refresh_rate, read_maps_from_folder
 from save_games import load_savegame
 from win_screen import WinScreen
 from lost_screen import LostScreen
@@ -17,7 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description="My Isometric Game")
     parser.add_argument("--debug", action="store_true", help="Enable debug output.")
     parser.add_argument("--mapdebug", action="store_true", help="Enable debug visualizations for map.")
-    parser.add_argument("--map", type=str, default="", help="Load the game with a specific map, e.g., 'quadratic_island'.")
+    parser.add_argument("--map", type=str, choices=read_maps_from_folder(), default=read_maps_from_folder()[0], help="Load the game with a specific map, e.g., 'quadratic_island'.")
     parser.add_argument("--fpscounter", action="store_true", help="Enable the FPS counter.")
     args = parser.parse_args()
 

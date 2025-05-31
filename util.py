@@ -86,6 +86,15 @@ def get_refresh_rate_gnome_wayland():
         pass
     return None
 
+def read_maps_from_folder(maps_path: str = "saved_maps/") -> list[str]:
+    map_options = []
+    for filename in os.listdir(maps_path):
+        file_path = os.path.join(maps_path, filename)
+        file_path = file_path.replace(".json", "")
+        file_path = file_path.replace(maps_path, "")
+        map_options.append(file_path)
+    return map_options
+
 def get_current_resolution() -> tuple[int, int]:
     pygame.init()
     info = pygame.display.Info()
