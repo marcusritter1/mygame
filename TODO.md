@@ -6,13 +6,7 @@
   * render only what is displayed / that can fit on screen
   * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
 
-* could generate the list of available maps and then put them as choices into the command line arguments for loading the map
-
 * could have input via xbox controller
-
-* make a map that is larger in width and height than screen - done
-  * test the movement around the map
-  * test initial camera positioning
 
 * how to put background audio for menu
 * figure out how to put pyinstaller in path and make task executable for all systems, or create a simple .sh/bash script for building a executable of the game...
@@ -40,10 +34,10 @@
 * how to make isometric tiles, grid, textures? -> LIKE IN ANNO?
   * Anno 1602, 1503 used prerendered textures. The game does not use Iso rendering at all. It is a plain grid drawn to the screen.
   * It looks like it is very difficult to extract its textures as they are in the binaries of the game.
+  * I could draw base layer of the map that is basically never changed by player as one big image, that would reduce rendering effort a lot. Other layers an animation can be drawn on top of that. This background image also needs only be updated very rarely most likely...
 * tiles in class objects and load in game class
 * zoom in and out of map?
-* fix map position, camera offset, and scrolling for maps that are larger than screen.
-* test for maps that are larger than screen only in width or height!
+* how to rotate map and textures?
 
 ## Multiplayer:
 
@@ -62,55 +56,3 @@
   * what about multi processing and threading support?
 
 * how to utilize OpenGL in python to accelerate rendering with GPU?
-* isometrics:
-    * pygame does not support z-order, so the last element drawn is always on top...
-    * https://www.youtube.com/watch?v=gE2gTCwLdFM
-    * https://www.youtube.com/watch?v=QpW6kC75aUA
-
-    ```
-    import pygame
-
-    # Initialize pygame
-    pygame.init()
-
-    # Constants
-    TILE_WIDTH = 64
-    TILE_HEIGHT = 32
-    MAP_WIDTH = 10
-    MAP_HEIGHT = 10
-    SCREEN_WIDTH = 800
-    SCREEN_HEIGHT = 600
-
-    # Create screen
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    # Load tile texture
-    tile_img = pygame.image.load("tile.png").convert_alpha()
-
-    # Convert grid coordinates to isometric
-    def cart_to_iso(x, y):
-        iso_x = (x - y) * TILE_WIDTH // 2 + SCREEN_WIDTH // 2
-        iso_y = (x + y) * TILE_HEIGHT // 2
-        return iso_x, iso_y
-
-    # Game loop
-    running = True
-    while running:
-        screen.fill((50, 50, 50))  # Background color
-
-        # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        # Draw map
-        for y in range(MAP_HEIGHT):
-            for x in range(MAP_WIDTH):
-                iso_x, iso_y = cart_to_iso(x, y)
-                screen.blit(tile_img, (iso_x, iso_y))
-
-        pygame.display.flip()
-
-    pygame.quit()
-
-    ```

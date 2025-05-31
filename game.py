@@ -65,7 +65,7 @@ class Game:
         self.game_screen_height = game_resolution[1]
 
         self.in_menu = False
-        self.game_menue = InGameMenu(self.screen, self.game_screen_width, self.game_screen_height)
+        self.game_menue = InGameMenu(self.screen, self.game_screen_width, self.game_screen_height, self.FPS_COUNTER, self.REFRESH_RATE)
 
         self.object_selected = False
         self.selected_object_map_position_x = 0
@@ -150,8 +150,10 @@ class Game:
                 self.max_move_up_down = 0
                 #print("that is true")
             else:
+                print("this code runs")
                 #print("MAP IS BIGGER THAN SCREEN!")
-                self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
+                self.max_move_up_down = (self.iso_map_height - self.game_screen_height) // 2
+                #self.max_move_up_down = abs(self.game_screen_height - (self.map_tiles_height * self.texture_size / 2) - (self.texture_size // 8))
 
         # calculate the amount of padding needed so that there is no black screen shown in the game window
         self.map_padding = calculate_map_padding(self.game_screen_width, self.game_screen_height, self.texture_size)
@@ -263,30 +265,26 @@ class Game:
 
             # scroll up
             if self.mouse_y <= self.game_screen_height * self.margin:
-                if self.camera_y < 0:
-                    # the adjustments seems not to be needed for this move
+                top_limit = self.iso_map_center_y + self.max_move_up_down
+                if self.camera_y < top_limit:
                     test_camera_y = self.camera_y + self.scroll_speed
-                    if test_camera_y > 0:
-                        diff = 0 - abs(test_camera_y)
-                        move = self.scroll_speed + diff
-                        self.camera_y += move
+                    if test_camera_y > top_limit:
+                        self.camera_y = top_limit
                     else:
-                        self.camera_y += self.scroll_speed
+                        self.camera_y = test_camera_y
+
 
             # scroll down
             if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
-                if self.iso_map_bottom > self.game_screen_height:
-                    self.max_move_up_down = 0
-                    #print("DEBUG ", self.camera_y, -(self.max_move_up_down))
-                    if self.camera_y > -(self.max_move_up_down):
-                        test_camera_y = self.camera_y - self.scroll_speed
-                        if test_camera_y < -(self.max_move_up_down):
-                            diff = abs(test_camera_y) - (self.max_move_up_down)
-                            move = self.scroll_speed - diff
-                            self.camera_y -= move
-                        else:
-                            self.camera_y -= self.scroll_speed
-
+                #print("DEBUG:", self.camera_y, self.iso_map_center_y - self.max_move_up_down)
+                if self.camera_y > (self.iso_map_center_y - self.max_move_up_down):
+                    test_camera_y = self.camera_y - self.scroll_speed
+                    if test_camera_y < (self.iso_map_center_y - self.max_move_up_down):
+                        diff = (self.iso_map_center_y - self.max_move_up_down) - test_camera_y
+                        move = self.scroll_speed - diff
+                        self.camera_y -= move
+                    else:
+                        self.camera_y -= self.scroll_speed
 
             """# Create a simple animated object (moving circle)
             pygame.draw.circle(self.screen, (255, 0, 0), (self.x_pos, self.y_pos), 20)

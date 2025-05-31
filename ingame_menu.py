@@ -3,12 +3,17 @@ import pygame_gui
 from save_games import SaveGame
 
 class InGameMenu:
-    def __init__(self, screen, WIDTH, HEIGHT):
+    def __init__(self, screen, WIDTH, HEIGHT, FPS_COUNTER: bool = False, REFRESH_RATE: int = 60):
         self.screen = screen
         self.manager = pygame_gui.UIManager((WIDTH, HEIGHT))
         self.font = pygame.font.Font(None, 50)
         self.options = ["continue", "save_game", "exit"]
         self.selected_index = 0
+        self.FPS_COUNTER = FPS_COUNTER
+        self.REFRESH_RATE = REFRESH_RATE
+        self.clock = pygame.time.Clock()
+        self.game_screen_width = WIDTH
+        self.game_screen_height = HEIGHT
 
         self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, 150), (200, 60)),
@@ -38,7 +43,14 @@ class InGameMenu:
         # Draw the UI elements (Dropdown and Buttons)
         self.manager.draw_ui(self.screen)
 
+        if self.FPS_COUNTER:
+            font = pygame.font.SysFont(None, 24)
+            fps = self.clock.get_fps()
+            fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
+            self.screen.blit(fps_text, (self.game_screen_width-100, 10))
+
         pygame.display.flip()
+        self.clock.tick(self.REFRESH_RATE) 
 
     def handle_event(self, event):
         """Handle user input for quit confirmation."""
