@@ -6,9 +6,6 @@
   * render only what is displayed / that can fit on screen
   * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
 
-* the set frame rate of system should be read
-* ideally I would cap the games fps rate to what is set on system level for in-game and the menus...
-
 * could generate the list of available maps and then put them as choices into the command line arguments for loading the map
 
 * could have input via xbox controller

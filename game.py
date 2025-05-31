@@ -10,7 +10,7 @@ from game_settings import GameSettings
 
 class Game:
 
-    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None, MAP_DEBUG: bool = False, MAP: str = "", FPS_COUNTER: bool = False):
+    def __init__(self, screen, game_resolution, game_settings: GameSettings = None, new_game: bool = True, game_stats: GameStats = None, MAP_DEBUG: bool = False, MAP: str = "", FPS_COUNTER: bool = False, REFRESH_RATE: int = 60):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -25,6 +25,7 @@ class Game:
         self.MAP_DEBUG=MAP_DEBUG
         self.MAP = MAP
         self.FPS_COUNTER = FPS_COUNTER
+        self.REFRESH_RATE = REFRESH_RATE
 
         self.last_update_time = pygame.time.get_ticks()  # Get initial time
         self.update_interval = 10000  # 10 seconds in milliseconds
@@ -503,7 +504,7 @@ class Game:
                 self.screen.blit(fps_text, (self.game_screen_width-100, 10))
 
             pygame.display.flip()
-            self.clock.tick(60)  # Limit to 60 FPS
+            self.clock.tick(self.REFRESH_RATE)  # Limit FPS to system set refresh rate
 
     def toggle_pause(self):
         """Toggles pause state."""

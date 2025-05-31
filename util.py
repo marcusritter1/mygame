@@ -1,4 +1,90 @@
 import pygame
+import sys
+from enum import Enum
+import subprocess
+import re
+import os
+
+class TargetSystem(Enum):
+    WINDOWS = 1
+    MAC = 2
+    LINUX = 3
+    NONE = 4
+
+def detect_system() -> TargetSystem:
+    target_system = None
+    if sys.platform.startswith("win"):
+        target_system = TargetSystem.WINDOWS
+    elif sys.platform.startswith("linux"):
+        target_system = TargetSystem.LINUX
+    elif sys.platform == "darwin":
+        target_system = TargetSystem.MAC
+    else:
+        target_system = TargetSystem.NONE
+    return target_system
+
+def detect_refresh_rate(OS: TargetSystem) -> int:
+    REFRESH_RATE = 60
+    if OS == TargetSystem.MAC:
+        import Quartz
+        main_display = Quartz.CGMainDisplayID()
+        mode = Quartz.CGDisplayCopyDisplayMode(main_display)
+        REFRESH_RATE = Quartz.CGDisplayModeGetRefreshRate(mode)
+        return REFRESH_RATE
+    elif OS == TargetSystem.WINDOWS:
+        import win32api
+        devmode = win32api.EnumDisplaySettings(None, win32api.ENUM_CURRENT_SETTINGS)
+        REFRESH_RATE = devmode.DisplayFrequency
+        return REFRESH_RATE
+    elif OS == TargetSystem.LINUX:
+        refresh_rate = detect_refresh_rate_linux()
+        if refresh_rate is not None:
+            return refresh_rate
+        else:
+            return REFRESH_RATE
+    elif OS == TargetSystem.NONE:
+        return REFRESH_RATE
+    else:
+        return REFRESH_RATE
+
+def detect_refresh_rate_linux():
+    if os.environ.get("WAYLAND_DISPLAY"):
+        return get_refresh_rate_gnome_wayland()
+    elif os.environ.get("DISPLAY"):
+        return get_refresh_rate_xrandr() or get_refresh_rate_glxinfo()
+    else:
+        return None
+
+def get_refresh_rate_xrandr():
+    try:
+        output = subprocess.check_output(['xrandr'], universal_newlines=True)
+        match = re.search(r'(\d+\.\d+)\*', output)
+        if match:
+            return float(match.group(1))
+    except Exception:
+        pass
+    return None
+
+def get_refresh_rate_glxinfo():
+    try:
+        output = subprocess.check_output(['glxinfo'], universal_newlines=True)
+        match = re.search(r'refresh rate:\s+(\d+)', output, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    except Exception:
+        pass
+    return None
+
+def get_refresh_rate_gnome_wayland():
+    try:
+        output = subprocess.check_output(
+            ['gsettings', 'get', 'org.gnome.desktop.interface', 'refresh-rate'],
+            universal_newlines=True
+        )
+        return int(output.strip())
+    except Exception:
+        pass
+    return None
 
 def get_current_resolution() -> tuple[int, int]:
     pygame.init()

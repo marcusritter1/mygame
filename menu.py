@@ -2,10 +2,11 @@ import pygame
 import pygame_gui
 
 class Menu:
-    def __init__(self, screen, WIDTH, HEIGHT, FPS_COUNTER):
+    def __init__(self, screen, WIDTH, HEIGHT, FPS_COUNTER, REFRESH_RATE):
         self.screen = screen
         self.manager = pygame_gui.UIManager((WIDTH, HEIGHT))
         self.FPS_COUNTER = FPS_COUNTER
+        self.REFRESH_RATE = REFRESH_RATE
         self.clock = pygame.time.Clock()
         self.game_screen_width = WIDTH
         self.game_screen_height = HEIGHT
@@ -57,7 +58,7 @@ class Menu:
             self.screen.blit(fps_text, (self.game_screen_width-100, 10))
 
         pygame.display.flip()
-        self.clock.tick(60)  # Limit to 60 FPS
+        self.clock.tick(self.REFRESH_RATE)  # Limit FPS to set system refresh rate
 
     def handle_event(self, event):
         """Handle keyboard navigation and selection."""
