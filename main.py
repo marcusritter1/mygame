@@ -19,7 +19,7 @@ def main():
     parser.add_argument("--mapdebug", action="store_true", help="Enable debug visualizations for map.")
     parser.add_argument("--map", type=str, choices=read_maps_from_folder(), default=read_maps_from_folder()[0], help="Load the game with a specific map, e.g., 'quadratic_island'.")
     parser.add_argument("--fpscounter", action="store_true", help="Enable the FPS counter.")
-    parser.add_argument("--fpscap", type=int, default=60, help="Set the limit for the frame rate.")
+    parser.add_argument("--fpscap", type=int, default=165, help="Set the limit for the frame rate.")
     args = parser.parse_args()
 
     MAP_DEBUG = False

@@ -81,6 +81,11 @@ class Game:
         self.texture_width = int(self.game_settings.texture_size[0] * self.zoom)
         self.texture_height = int(self.game_settings.texture_size[1] * self.zoom)
 
+        self.water_texture = pygame.transform.smoothscale(self.water_texture, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+        self.grass_texture = pygame.transform.smoothscale(self.grass_texture, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+        self.house_texture = pygame.transform.smoothscale(self.house_texture, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+        self.out_of_map_texture = pygame.transform.smoothscale(self.out_of_map_texture, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+
         # calculate max tiles width and height that will fit on the game screen
         self.max_tiles_fit_screen_width = game_resolution[0] // self.texture_size
         if (game_resolution[0] / self.texture_size) > self.max_tiles_fit_screen_width:
@@ -326,8 +331,12 @@ class Game:
                         tile_type = self.map.tile_grid[row][col]
 
                         if tile_type != 0:
-                            text = self.tile_textures.get(tile_type, self.BLACK)
-                            scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                            scaled_text = self.tile_textures.get(tile_type, self.BLACK)
+                            #TODO: without this zoom doe snot work...
+                            #Problem is that this call in each loop cycle makes the game slower...
+                            # with a limited amount of zoom levels and prescaled textures this could be avoided!!!
+
+                            #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
                             #self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
                             self.screen.blit(scaled_text, (iso_x, iso_y))
                         # draw a placeholder in case the texture is missing
@@ -336,10 +345,11 @@ class Game:
                             pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
                             pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
                     else:
+                        pass
                         # Draw background texture for out-of-bounds tiles
-                        text = self.out_of_map_texture
-                        scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
-                        self.screen.blit(scaled_text, (iso_x, iso_y))
+                        #text = self.out_of_map_texture
+                        #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                        #self.screen.blit(scaled_text, (iso_x, iso_y))
 
             # when object is selected
             if self.object_selected:

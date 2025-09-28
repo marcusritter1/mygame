@@ -10,8 +10,8 @@ import json
 data = {}
 data["map"] = []
 
-num_rows = 50
-num_cols = 50
+num_rows = 500
+num_cols = 500
 
 for col in range(num_cols):
     x = []
@@ -26,5 +26,5 @@ for col in range(num_cols):
 
 print(data)
 
-with open("quadratic_island.json", "w") as file:
+with open("large.json", "w") as file:
     json.dump(data, file)
