@@ -2,7 +2,7 @@ import pygame
 from pause import PauseMenu
 from ingame_menu import InGameMenu
 from map import Map
-from util import split_evenly, cart_to_iso, screen_to_iso, calculate_map_padding
+from util import split_evenly, cart_to_iso, screen_to_iso, calculate_map_padding, screen_to_iso2
 import numpy as np
 from game_stats import GameStats
 from game_settings import GameSettings
@@ -319,10 +319,49 @@ class Game:
             if self.camera_moved == True:
                 # draw black background as base
                 self.screen.fill((0, 0, 0))
+
+                ############################
+                #start_col = max(0, int(self.camera_x // self.texture_width))
+                #end_col = min(self.map_tiles_width, int((self.camera_x + self.game_screen_width) // self.texture_width) + 1)
+                #print("DEBUG: ", start_col, end_col)
+                #print("DEBUG: ",self.max_tiles_fit_screen_width)
+
+                #start_row = max(0, int(self.camera_y // self.texture_height))
+                #end_row = min(self.map_tiles_height, int((self.camera_y + self.game_screen_height) // self.texture_height) + 1)
+                #print("DEBUG: ", start_row, end_row)
+                #print("DEBUG: ",self.max_tiles_fit_screen_height)
+                PINK = (255, 105, 180)
+
+                # Define rectangle position and size (x, y, width, height)
+
+                top_left = screen_to_iso2(0,0, self.texture_width, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                top_right = screen_to_iso2(self.game_screen_width, 0, self.texture_width, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                bottom_left = screen_to_iso2(0, self.game_screen_height, self.texture_width, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+                bottom_right = screen_to_iso2(self.game_screen_width, self.game_screen_height, self.texture_width, self.game_screen_width, self.game_screen_height, self.camera_x, self.camera_y)
+              
+                cols = [top_left[0], top_right[0], bottom_left[0], bottom_right[0]]
+                rows = [top_left[1], top_right[1], bottom_left[1], bottom_right[1]]
+
+                start_col = max(0, min(cols) - 2)
+                end_col   = min(self.map_tiles_width, max(cols) + 2)
+                start_row = max(0, min(rows) - 2)
+                end_row   = min(self.map_tiles_height, max(rows) + 2)
+
+                #print("DEBUG cols: ", start_col, end_col)
+                #print("DEBUG rows: ", start_row, end_row)
+
+                ##############################
+
+                
+
                 # draw the basic map...
                 # Extended loop to go beyond map boundaries
-                for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
-                    for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
+                #count = 0
+                #for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
+                #    for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
+                for row in range(start_row, end_row):
+                    for col in range(start_col, end_col): 
+                        #count += 1
 
                         # Is this tile inside the actual map?
                         inside_map = (0 <= row < self.map_tiles_height) and (0 <= col < self.map_tiles_width)
@@ -365,6 +404,30 @@ class Game:
                             #text = self.out_of_map_texture
                             #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
                             #self.screen.blit(scaled_text, (iso_x, iso_y))
+
+                #print("DEBUG draws:",count)
+                    
+                """count2 = 0
+                for row in range(start_row, end_row):
+                    for col in range(start_col, end_col):
+                        count2 += 1
+                        iso_x, iso_y = cart_to_iso(
+                            col, row,
+                            self.texture_size,
+                            self.game_screen_width,
+                            self.game_screen_height,
+                            self.camera_x,
+                            self.camera_y,
+                            self.iso_map_width,
+                            self.iso_map_height,
+                            self.map_width_smaller_than_screen,
+                            self.map_height_smaller_than_screen,
+                            self.zoom
+                        )
+                        rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
+                        pygame.draw.rect(self.screen, PINK, rect, width=1)
+
+                print("DEBUG reduced loop:",count2)"""
 
             # when object is selected
             if self.object_selected:

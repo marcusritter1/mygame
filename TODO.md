@@ -6,9 +6,7 @@
 
 ## Ideas:
 
-* In full screen with large resolution in game I only get about 30 fps, how can I improve that?
-  * render only what is displayed / that can fit on screen
-  * render only stuff that has been changed, everything that has not been changed does not need to be redrawn every cycle of the game!
+* think about which tile size based on anno textures I should use... larger textures mean less tiles that need to be drawn, e.g., 32x32 tiles vs. 64x64 tiles...
 
 * fix WASD movement code - should be same logic as for mouse without near screen border detection...
 
