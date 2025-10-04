@@ -27,6 +27,14 @@ class Game:
         self.FPS_COUNTER = FPS_COUNTER
         self.REFRESH_RATE = REFRESH_RATE
 
+        # variable to check if the camera was moved, set to true so the first cycle map is drawn
+        self.camera_moved = True
+
+        # time counter for fps display, to draw it only every second
+        self.last_fps_update = 0
+        self.fps_font = pygame.font.SysFont(None, 24)
+        self.fps_text = self.fps_font.render("FPS: 0/0", True, (255, 255, 255))
+
         self.last_update_time = pygame.time.get_ticks()  # Get initial time
         self.update_interval = 10000  # 10 seconds in milliseconds
 
@@ -222,8 +230,6 @@ class Game:
                     self.in_menu = False
                     return None
 
-            self.screen.fill((0, 0, 0))
-
             # Get mouse position
             self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
             #print("mouse x:",self.mouse_x, "mouse y:",self.mouse_y)
@@ -245,6 +251,7 @@ class Game:
             if self.mouse_x >= self.game_screen_width - (self.game_screen_width * self.margin):
                 #print("DEBUG ", self.camera_x, (self.iso_map_center_x+self.max_move_left_right))
                 if self.camera_x > (self.iso_map_center_x-self.max_move_left_right):
+                    self.camera_moved = True
                     test_camera_x = self.camera_x - self.scroll_speed
                     if test_camera_x < -(self.max_move_left_right):
                         diff = abs(test_camera_x) - (self.max_move_left_right)
@@ -259,6 +266,7 @@ class Game:
 
                 # You can scroll left only if camera_x is less than right boundary
                 if self.camera_x < (self.iso_map_center_x + self.max_move_left_right):
+                    self.camera_moved = True
                     test_camera_x = self.camera_x + self.scroll_speed  # scroll left = increase camera_x
 
                     # Clamp to not go past left edge (max allowed camera_x)
@@ -273,6 +281,7 @@ class Game:
             if self.mouse_y <= self.game_screen_height * self.margin:
                 top_limit = self.iso_map_center_y + self.max_move_up_down
                 if self.camera_y < top_limit:
+                    self.camera_moved = True
                     test_camera_y = self.camera_y + self.scroll_speed
                     if test_camera_y > top_limit:
                         self.camera_y = top_limit
@@ -284,6 +293,7 @@ class Game:
             if self.mouse_y >= self.game_screen_height - (self.game_screen_height * self.margin):
                 #print("DEBUG:", self.camera_y, self.iso_map_center_y - self.max_move_up_down)
                 if self.camera_y > (self.iso_map_center_y - self.max_move_up_down):
+                    self.camera_moved = True
                     test_camera_y = self.camera_y - self.scroll_speed
                     if test_camera_y < (self.iso_map_center_y - self.max_move_up_down):
                         diff = (self.iso_map_center_y - self.max_move_up_down) - test_camera_y
@@ -305,51 +315,56 @@ class Game:
             if self.y_pos >= self.screen.get_height() - 20 or self.y_pos <= 20:
                 self.y_velocity = -self.y_velocity  # Reverse vertical direction"""
 
-            # Extended loop to go beyond map boundaries
-            for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
-                for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
 
-                    # Is this tile inside the actual map?
-                    inside_map = (0 <= row < self.map_tiles_height) and (0 <= col < self.map_tiles_width)
+            if self.camera_moved == True:
+                # draw black background as base
+                self.screen.fill((0, 0, 0))
+                # draw the basic map...
+                # Extended loop to go beyond map boundaries
+                for row in range(-self.map_padding, self.map_tiles_height + self.map_padding):
+                    for col in range(-self.map_padding, self.map_tiles_width + self.map_padding):
 
-                    # Convert to isometric coordinates
-                    iso_x, iso_y = cart_to_iso(
-                        col, row,
-                        self.texture_size,
-                        self.game_screen_width,
-                        self.game_screen_height,
-                        self.camera_x,
-                        self.camera_y,
-                        self.iso_map_width,
-                        self.iso_map_height,
-                        self.map_width_smaller_than_screen,
-                        self.map_height_smaller_than_screen,
-                        self.zoom
-                    )
+                        # Is this tile inside the actual map?
+                        inside_map = (0 <= row < self.map_tiles_height) and (0 <= col < self.map_tiles_width)
 
-                    if inside_map:
-                        tile_type = self.map.tile_grid[row][col]
+                        # Convert to isometric coordinates
+                        iso_x, iso_y = cart_to_iso(
+                            col, row,
+                            self.texture_size,
+                            self.game_screen_width,
+                            self.game_screen_height,
+                            self.camera_x,
+                            self.camera_y,
+                            self.iso_map_width,
+                            self.iso_map_height,
+                            self.map_width_smaller_than_screen,
+                            self.map_height_smaller_than_screen,
+                            self.zoom
+                        )
 
-                        if tile_type != 0:
-                            scaled_text = self.tile_textures.get(tile_type, self.BLACK)
-                            #TODO: without this zoom doe snot work...
-                            #Problem is that this call in each loop cycle makes the game slower...
-                            # with a limited amount of zoom levels and prescaled textures this could be avoided!!!
+                        if inside_map:
+                            tile_type = self.map.tile_grid[row][col]
 
-                            #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
-                            #self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
-                            self.screen.blit(scaled_text, (iso_x, iso_y))
-                        # draw a placeholder in case the texture is missing
+                            if tile_type != 0:
+                                scaled_text = self.tile_textures.get(tile_type, self.BLACK)
+                                #TODO: without this zoom doe snot work...
+                                #Problem is that this call in each loop cycle makes the game slower...
+                                # with a limited amount of zoom levels and prescaled textures this could be avoided!!!
+
+                                #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                                #self.screen.blit(self.tile_textures.get(tile_type, self.BLACK), (iso_x, iso_y))
+                                self.screen.blit(scaled_text, (iso_x, iso_y))
+                            # draw a placeholder in case the texture is missing
+                            else:
+                                tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
+                                pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
+                                pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
                         else:
-                            tile_rect = pygame.Rect(iso_x, iso_y, self.texture_size, self.texture_size)
-                            pygame.draw.rect(self.screen, self.tile_colors.get(tile_type, self.BLACK), tile_rect)
-                            pygame.draw.rect(self.screen, self.WHITE, tile_rect, 1)  # Grid outline
-                    else:
-                        pass
-                        # Draw background texture for out-of-bounds tiles
-                        #text = self.out_of_map_texture
-                        #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
-                        #self.screen.blit(scaled_text, (iso_x, iso_y))
+                            pass
+                            # Draw background texture for out-of-bounds tiles
+                            #text = self.out_of_map_texture
+                            #scaled_text = pygame.transform.smoothscale(text, (int(self.texture_width*self.zoom), int(self.texture_height*self.zoom)))
+                            #self.screen.blit(scaled_text, (iso_x, iso_y))
 
             # when object is selected
             if self.object_selected:
@@ -444,6 +459,10 @@ class Game:
                             self.detail_view_text = ""
 
                 if event.type == pygame.KEYDOWN:
+                    # activate/deactivate fps counter
+                    if event.key == pygame.K_F1:
+                        self.FPS_COUNTER = not self.FPS_COUNTER
+
                     if event.key == pygame.K_p:
                         self.toggle_pause()
                     if event.key == pygame.K_ESCAPE:
@@ -495,6 +514,7 @@ class Game:
                     return "menu"
                 else:
                     self.paused = False  # Unpause after returning from pause menu
+                    self.camera_moved = True
 
             # Check if 10 seconds have passed
             current_time = pygame.time.get_ticks()
@@ -524,10 +544,15 @@ class Game:
                 pygame.draw.circle(self.screen, (255, 0, 0), (self.iso_map_right, (self.game_screen_height // 2)), 3)
 
             if self.FPS_COUNTER:
-                font = pygame.font.SysFont(None, 24)
-                fps = self.clock.get_fps()
-                fps_text = font.render(f"FPS: {fps:.1f}/{self.REFRESH_RATE}", True, (255, 255, 255))
-                self.screen.blit(fps_text, (self.game_screen_width-120, 10))
+                current_time = pygame.time.get_ticks()
+                if current_time - self.last_fps_update > 500:
+                    self.last_fps_update = current_time
+                    fps = self.clock.get_fps()
+                    self.fps_text = self.fps_font.render(f"FPS: {fps:.0f}/{self.REFRESH_RATE}", True, (255, 255, 255))
+                self.screen.blit(self.fps_text, (self.game_screen_width-120, 10))
+
+            # set camera moved false again for this input cycle
+            self.camera_moved = False
 
             pygame.display.flip()
             self.clock.tick(self.REFRESH_RATE)  # Limit FPS to system set refresh rate

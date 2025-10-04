@@ -11,6 +11,11 @@ class PauseMenu:
         self.FPS_COUNTER = FPS_COUNTER
         self.REFRESH_RATE = REFRESH_RATE
 
+        # time counter for fps display, to draw it only every second
+        self.last_fps_update = 0
+        self.fps_font = pygame.font.SysFont(None, 24)
+        self.fps_text = self.fps_font.render("FPS: 0/0", True, (255, 255, 255))
+
     def run(self):
         # Capture the current screen contents (game background)
         background = self.screen.copy()
@@ -28,10 +33,12 @@ class PauseMenu:
             self.screen.blit(paused_text, (200, 250))  # Draw the paused text
 
             if self.FPS_COUNTER:
-                font = pygame.font.SysFont(None, 24)
-                fps = self.clock.get_fps()
-                fps_text = font.render(f"FPS: {fps:.1f}/{self.REFRESH_RATE}", True, (255, 255, 255))
-                self.screen.blit(fps_text, (self.game_screen_width-120, 10))
+                current_time = pygame.time.get_ticks()
+                if current_time - self.last_fps_update > 500:
+                    self.last_fps_update = current_time
+                    fps = self.clock.get_fps()
+                    self.fps_text = self.fps_font.render(f"FPS: {fps:.0f}/{self.REFRESH_RATE}", True, (255, 255, 255))
+                self.screen.blit(self.fps_text, (self.game_screen_width-120, 10))
 
             pygame.display.flip()
 
@@ -45,5 +52,10 @@ class PauseMenu:
                         pass
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                     return  # Unpause and return to the game
+    
+                if event.type == pygame.KEYDOWN:
+                    # activate/deactivate fps counter
+                    if event.key == pygame.K_F1:
+                        self.FPS_COUNTER = not self.FPS_COUNTER
             
             self.clock.tick(self.REFRESH_RATE)  # Limit to 60 FPS

@@ -1,5 +1,9 @@
 # TODO
 
+## Bugs:
+
+* if game was paused, camera moved is not triggered correctly and it takes a move of the camera until the map is redrawn, same for pause menu!
+
 ## Ideas:
 
 * In full screen with large resolution in game I only get about 30 fps, how can I improve that?

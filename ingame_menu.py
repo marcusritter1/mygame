@@ -15,6 +15,11 @@ class InGameMenu:
         self.game_screen_width = WIDTH
         self.game_screen_height = HEIGHT
 
+        # time counter for fps display, to draw it only every second
+        self.last_fps_update = 0
+        self.fps_font = pygame.font.SysFont(None, 24)
+        self.fps_text = self.fps_font.render("FPS: 0/0", True, (255, 255, 255))
+
         self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, 150), (200, 60)),
             text='Continue',
@@ -44,10 +49,11 @@ class InGameMenu:
         self.manager.draw_ui(self.screen)
 
         if self.FPS_COUNTER:
-            font = pygame.font.SysFont(None, 24)
-            fps = self.clock.get_fps()
-            fps_text = font.render(f"FPS: {fps:.1f}/{self.REFRESH_RATE}", True, (255, 255, 255))
-            self.screen.blit(fps_text, (self.game_screen_width-120, 10))
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_fps_update > 500:
+                fps = self.clock.get_fps()
+                self.fps_text = self.fps_font.render(f"FPS: {fps:.0f}/{self.REFRESH_RATE}", True, (255, 255, 255))
+            self.screen.blit(self.fps_text, (self.game_screen_width-120, 10))
 
         pygame.display.flip()
         self.clock.tick(self.REFRESH_RATE) 
@@ -55,6 +61,9 @@ class InGameMenu:
     def handle_event(self, event):
         """Handle user input for quit confirmation."""
         if event.type == pygame.KEYDOWN:
+            # activate/deactivate fps counter
+            if event.key == pygame.K_F1:
+                self.FPS_COUNTER = not self.FPS_COUNTER
             if event.key == pygame.K_DOWN:
                 self.selected_index = (self.selected_index + 1) % len(self.options)
                 self.highlight_selected()
